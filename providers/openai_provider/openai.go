@@ -2,10 +2,13 @@ package openai_provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/gigurra/ai/domain"
 	"github.com/samber/lo"
 	"github.com/sashabaranov/go-openai"
+	"io"
+	"log/slog"
 	"sort"
 )
 
@@ -126,7 +129,11 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 		return zero, fmt.Errorf("failed to ask question: %w", err)
 	}
 
-	resp := BasicAskResponse{
+	return openAiResp2Resp(res), nil
+}
+
+func openAiResp2Resp(res openai.ChatCompletionResponse) BasicAskResponse {
+	return BasicAskResponse{
 		ID:      res.ID,
 		Object:  res.Object,
 		Created: res.Created,
@@ -146,8 +153,80 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 		},
 		SystemFingerprint: res.SystemFingerprint,
 	}
+}
 
-	return resp, nil
+func openAiStrResp2Resp(res openai.ChatCompletionStreamResponse) BasicAskResponse {
+	return BasicAskResponse{
+		ID:      res.ID,
+		Object:  res.Object,
+		Created: res.Created,
+		Model:   res.Model,
+		Choices: lo.Map(res.Choices, func(item openai.ChatCompletionStreamChoice, index int) Choice {
+			return Choice{
+				Index:        item.Index,
+				Message:      Message{Role: item.Delta.Role, Content: item.Delta.Content},
+				LogProbs:     nil,
+				FinishReason: string(item.FinishReason),
+			}
+		}),
+		Usage: BasicAskUsage{
+			PromptTokens:     res.Usage.PromptTokens,
+			CompletionTokens: res.Usage.CompletionTokens,
+			TotalTokens:      res.Usage.TotalTokens,
+		},
+		SystemFingerprint: res.SystemFingerprint,
+	}
+}
+
+func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChunk {
+
+	resChan := make(chan domain.RespChunk, 1024)
+
+	req := openai.ChatCompletionRequest{
+		Model: o.cfg.Model,
+		Messages: lo.Map(question.Messages, func(message domain.Message, index int) openai.ChatCompletionMessage {
+			return openai.ChatCompletionMessage{
+				Role:    string(message.SourceType),
+				Content: message.Content,
+			}
+		}),
+		Stream: true,
+	}
+	remoteStream, err := o.client.CreateChatCompletionStream(
+		context.Background(),
+		req,
+	)
+	if err != nil {
+		resChan <- domain.RespChunk{Err: fmt.Errorf("failed to create chat completion stream: %w", err)}
+		close(resChan)
+		return resChan
+	}
+	go func() {
+
+		defer func() {
+			err := remoteStream.Close()
+			if err != nil {
+				slog.Error(fmt.Sprintf("failed to close chat completion stream: %v", err))
+			}
+		}()
+		defer close(resChan)
+
+		for {
+			response, err := remoteStream.Recv()
+			if errors.Is(err, io.EOF) {
+				return //we're done
+			}
+
+			if err != nil {
+				resChan <- domain.RespChunk{Err: fmt.Errorf("failed to receive stream response: %w", err)}
+				return
+			}
+
+			resChan <- domain.RespChunk{Resp: openAiStrResp2Resp(response)}
+		}
+	}()
+
+	return resChan
 }
 
 // prove that OpenAIProvider implements the Provider interface

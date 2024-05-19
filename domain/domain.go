@@ -18,6 +18,11 @@ type Question struct {
 	Messages []Message
 }
 
+type RespChunk struct {
+	Resp Response
+	Err  error
+}
+
 type Choice struct {
 	Index   int
 	Message Message
@@ -44,4 +49,5 @@ type Provider interface {
 
 	// BasicAsk asks a question and returns the answer. The most primitive use case.
 	BasicAsk(question Question) (Response, error)
+	BasicAskStream(question Question) <-chan RespChunk
 }
