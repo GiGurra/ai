@@ -32,16 +32,8 @@ type Config struct {
 }
 
 func cfgFilePath() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		panic(fmt.Errorf("failed to get home dir: %w", err))
-	}
-	dir := homeDir + "/.config/gigurra/ai"
-	err = os.MkdirAll(dir, 0755)
-	if err != nil {
-		panic(fmt.Errorf("failed to create config dir: %w", err))
-	}
-	return homeDir + "/.config/gigurra/ai/config.yaml"
+	appDir := common.AppDir()
+	return appDir + "/config.yaml"
 }
 
 func LoadCfgFile() (string, Config) {

@@ -8,6 +8,7 @@ import (
 	"github.com/gigurra/ai/config"
 	"github.com/gigurra/ai/domain"
 	"github.com/gigurra/ai/providers/openai_provider"
+	"github.com/gigurra/ai/session"
 	"github.com/spf13/cobra"
 	"io"
 	"log/slog"
@@ -34,6 +35,9 @@ func main() {
 			// Get the parent shell id
 			sessionId := p.Session.Value()
 			slog.Info(fmt.Sprintf("session id: %s", sessionId))
+
+			state := session.LoadSession(sessionId)
+			slog.Info(fmt.Sprintf("state: %+v", state))
 
 			os.Exit(0)
 

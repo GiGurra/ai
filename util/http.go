@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-resty/resty/v2"
+	"os"
 )
 
 var HttpClient = resty.New()
@@ -148,4 +149,21 @@ func HttpPostRecvJson[RespType any](url string, params PostParams) (RespType, er
 	}
 
 	return result, err
+}
+
+func ReadFaileAsJson[T any](path string) (T, error) {
+	var zero T
+
+	bytes, err := os.ReadFile(path)
+	if err != nil {
+		return zero, fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var result T
+	err = json.Unmarshal(bytes, &result)
+	if err != nil {
+		return zero, fmt.Errorf("failed to unmarshal json: %w", err)
+	}
+
+	return result, nil
 }
