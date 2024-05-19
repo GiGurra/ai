@@ -39,41 +39,24 @@ func main() {
 			cfgFilePath, storedCfg := config.LoadCfgFile()
 			cfg := config.ValidateCfg(cfgFilePath, storedCfg, p)
 
-			stdInContents := ""
-			stat, err := os.Stdin.Stat()
-			if err == nil && stat != nil && (stat.Mode()&os.ModeCharDevice) == 0 {
-				reader := bufio.NewReader(os.Stdin)
-				var sb strings.Builder
-				for {
-					input, err := reader.ReadString('\n')
-					if err != nil && err != io.EOF {
-						common.FailAndExit(1, fmt.Sprintf("Failed to read from stdin: %v", err))
-					}
-					sb.WriteString(input)
-					if err == io.EOF {
-						break
-					}
-				}
-				stdInContents = strings.TrimSpace(sb.String())
-			}
-
 			provider := createProvider(cfg)
 
-			messages := []domain.Message{
-				{
-					SourceType: domain.User,
-					Content:    p.Question.Value(),
-				},
-			}
+			question := p.Question.Value()
 
 			// if stdin is not empty, add it at the bottom of the first message
+			stdInContents := readStdin()
 			if stdInContents != "" {
 				footer := fmt.Sprintf("\n Attached additional info/data: \n %s", stdInContents)
-				messages[0].Content = fmt.Sprintf("%s\n%s", messages[0].Content, footer)
+				question = fmt.Sprintf("%s\n%s", question, footer)
 			}
 
 			stream := provider.BasicAskStream(domain.Question{
-				Messages: messages,
+				Messages: []domain.Message{
+					{
+						SourceType: domain.User,
+						Content:    question,
+					},
+				},
 			})
 
 			for {
@@ -92,6 +75,27 @@ func main() {
 			}
 		},
 	}.ToApp()
+}
+
+func readStdin() string {
+	stdInContents := ""
+	stat, err := os.Stdin.Stat()
+	if err == nil && stat != nil && (stat.Mode()&os.ModeCharDevice) == 0 {
+		reader := bufio.NewReader(os.Stdin)
+		var sb strings.Builder
+		for {
+			input, err := reader.ReadString('\n')
+			if err != nil && err != io.EOF {
+				common.FailAndExit(1, fmt.Sprintf("Failed to read from stdin: %v", err))
+			}
+			sb.WriteString(input)
+			if err == io.EOF {
+				break
+			}
+		}
+		stdInContents = strings.TrimSpace(sb.String())
+	}
+	return stdInContents
 }
 
 func createProvider(cfg config.Config) domain.Provider {
