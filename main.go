@@ -19,6 +19,7 @@ import (
 func main() {
 
 	p := config.CliParams{}
+	pStatus := config.CliStatusParams{}
 
 	boa.Wrap{
 		Use:   "ai",
@@ -39,6 +40,15 @@ func main() {
 					for _, s := range sessions {
 						fmt.Printf(" - %s (i=%d/%d, o=%d/%d, created %v)\n", s.Name, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
 					}
+				},
+			}.ToCmd(),
+			boa.Wrap{
+				Use:    "status",
+				Short:  "Prints info about current session",
+				Params: &pStatus,
+				Run: func(cmd *cobra.Command, args []string) {
+					s := session.LoadSession(pStatus.Session.Value())
+					fmt.Printf("(i=%d/%d, o=%d/%d, created %v)", s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
 				},
 			}.ToCmd(),
 		},

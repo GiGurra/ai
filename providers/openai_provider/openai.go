@@ -78,7 +78,6 @@ func (o BasicAskResponse) GetModel() string {
 
 func (o BasicAskResponse) GetChoices() []domain.Choice {
 	return lo.Map(o.Choices, func(item Choice, index int) domain.Choice {
-		slog.Info(fmt.Sprintf("item: %+v", item))
 		return domain.Choice{
 			Index: 0,
 			Message: domain.Message{

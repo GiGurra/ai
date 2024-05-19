@@ -23,6 +23,11 @@ type CliParams struct {
 	Temperature boa.Optional[float64] `descr:"Temperature to use" short:"t" `
 }
 
+type CliStatusParams struct {
+	Session boa.Required[string] `descr:"Session id" positional:"false" env:"CURRENT_AI_SESSION"`
+	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false"`
+}
+
 type StoredConfig struct {
 	Provider string                 `yaml:"provider"`
 	OpenAI   openai_provider.Config `yaml:"openai"`
