@@ -169,6 +169,40 @@ func main() {
 			}
 
 			slog.Info(fmt.Sprintf("Response: %v", string(respJson)))
+
+			slog.Info("testing streaming response")
+
+			stream := provider.BasicAskStream(domain.Question{
+				Messages: []domain.Message{
+					{
+						SourceType: domain.User,
+						Content:    "Please write a short story about a cat and a dog",
+					},
+				},
+			})
+
+			slog.Info("streaming response:")
+			for {
+				res, ok := <-stream
+				if !ok {
+					break // stream done
+				}
+				if res.Err != nil {
+					slog.Error(fmt.Sprintf("Failed to receive stream response: %v", res.Err))
+					os.Exit(1)
+				}
+				if res.Resp == nil {
+					slog.Error(fmt.Sprintf("Received nil response"))
+					os.Exit(1)
+				}
+				if len(res.Resp.GetChoices()) == 0 {
+					continue
+				}
+
+				fmt.Printf("%s", res.Resp.GetChoices()[0].Message.Content)
+			}
+
+			slog.Info("Done")
 		},
 	}.ToApp()
 }

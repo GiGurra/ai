@@ -169,11 +169,17 @@ func openAiStrResp2Resp(res openai.ChatCompletionStreamResponse) BasicAskRespons
 				FinishReason: string(item.FinishReason),
 			}
 		}),
-		Usage: BasicAskUsage{
-			PromptTokens:     res.Usage.PromptTokens,
-			CompletionTokens: res.Usage.CompletionTokens,
-			TotalTokens:      res.Usage.TotalTokens,
-		},
+		Usage: func() BasicAskUsage {
+			if res.Usage != nil {
+				return BasicAskUsage{
+					PromptTokens:     res.Usage.PromptTokens,
+					CompletionTokens: res.Usage.CompletionTokens,
+					TotalTokens:      res.Usage.TotalTokens,
+				}
+			} else {
+				return BasicAskUsage{}
+			}
+		}(),
 		SystemFingerprint: res.SystemFingerprint,
 	}
 }
