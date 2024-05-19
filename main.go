@@ -15,6 +15,7 @@ import (
 )
 
 type CliParams struct {
+	Question    boa.Required[string]  `descr:"Question to ask" positional:"true"`
 	Quiet       boa.Required[bool]    `descr:"Quiet mode, requires no user input" short:"q" default:"false"`
 	Verbose     boa.Required[bool]    `descr:"Verbose output" short:"v" default:"false"`
 	Provider    boa.Optional[string]  `descr:"AI provider to use" short:"p"`
@@ -151,7 +152,7 @@ func main() {
 				Messages: []domain.Message{
 					{
 						SourceType: domain.User,
-						Content:    "please say hello",
+						Content:    p.Question.Value(),
 					},
 				},
 			})
