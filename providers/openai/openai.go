@@ -1,7 +1,6 @@
 package openai
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/gigurra/ai/domain"
 	"github.com/gigurra/ai/util"
@@ -60,24 +59,15 @@ func (o OpenAIProvider) ListModels() ([]string, error) {
 
 	url := baseUrl + "models"
 
-	res, err := util.HttpClient.R().SetHeaders(filterOutEmptyValues(map[string]string{
-		"Authorization":       "Bearer " + o.cfg.APIKey,
-		"OpenAI-Organization": o.cfg.Organization,
-		"OpenAI-Project":      o.cfg.Project,
-	})).Get(url)
-
+	listing, err := util.HttpGetJson[OpenAIModelListing](url, util.GetParams{
+		Headers: filterOutEmptyValues(map[string]string{
+			"Authorization":       "Bearer " + o.cfg.APIKey,
+			"OpenAI-Organization": o.cfg.Organization,
+			"OpenAI-Project":      o.cfg.Project,
+		}),
+	})
 	if err != nil {
-		return nil, fmt.Errorf(".ListModels(..): failed to send request: %w", err)
-	}
-
-	if res.StatusCode() != 200 {
-		return nil, fmt.Errorf(".ListModels(..): Unexpected status code: %d", res.StatusCode())
-	}
-
-	listing := OpenAIModelListing{}
-	err = json.Unmarshal(res.Body(), &listing)
-	if err != nil {
-		return nil, fmt.Errorf(".ListModels(..): failed to unmarshal response body: %w", err)
+		return nil, fmt.Errorf("failed to list models: %w", err)
 	}
 
 	// sort the models by id
