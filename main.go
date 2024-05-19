@@ -31,6 +31,12 @@ func main() {
 		Long:   `See the README.MD for more information`,
 		Run: func(cmd *cobra.Command, args []string) {
 
+			// Get the parent shell id
+			sessionId := p.Session.Value()
+			slog.Info(fmt.Sprintf("session id: %s", sessionId))
+
+			os.Exit(0)
+
 			// if verbose is set, set slog to debug
 			if p.Verbose.Value() {
 				slog.SetLogLoggerLevel(slog.LevelDebug)
