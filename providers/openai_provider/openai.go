@@ -9,6 +9,7 @@ import (
 	"github.com/sashabaranov/go-openai"
 	"io"
 	"log/slog"
+	"os"
 	"sort"
 )
 
@@ -238,14 +239,40 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 // prove that OpenAIProvider implements the Provider interface
 var _ domain.Provider = &Provider{}
 
-func NewOpenAIProvider(cfg Config) *Provider {
+func NewOpenAIProvider(cfg Config, verbose bool) *Provider {
 
 	client := openai.NewClient(cfg.APIKey)
 
-	return &Provider{
+	provider := &Provider{
 		cfg:    cfg,
 		client: client,
 	}
+
+	printAndListModels := func(level slog.Level) []string {
+		slog.Log(context.Background(), level, "Available models:")
+
+		models, err := provider.ListModels()
+		if err != nil {
+			slog.Error(fmt.Sprintf("Failed to list models: %v", err))
+			os.Exit(1)
+		}
+		for _, model := range models {
+			slog.Log(context.Background(), level, fmt.Sprintf(" - %s", model))
+		}
+
+		return models
+	}
+
+	if verbose {
+		models := printAndListModels(slog.LevelDebug)
+
+		if !lo.Contains(models, cfg.Model) {
+			slog.Error(fmt.Sprintf("Model '%s' not found. (Maybe you don't have access to it?)", cfg.Model))
+			os.Exit(1)
+		}
+	}
+
+	return provider
 }
 
 func filterOutEmptyValues(mapIn map[string]string) map[string]string {
