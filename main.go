@@ -30,6 +30,18 @@ func main() {
 		),
 		Params: &p,
 		Long:   `See the README.MD for more information`,
+		SubCommands: []*cobra.Command{
+			boa.Wrap{
+				Use:   "list-sessions",
+				Short: "List all stored sessions",
+				Run: func(cmd *cobra.Command, args []string) {
+					sessions := session.ListSessions()
+					for _, s := range sessions {
+						fmt.Printf(" - %s (created %v)\n", s.Name, s.CreatedAt.Format("2006-01-02 15:04:05"))
+					}
+				},
+			}.ToCmd(),
+		},
 		Run: func(cmd *cobra.Command, args []string) {
 
 			// if verbose is set, set slog to debug

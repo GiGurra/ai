@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"os"
+	"slices"
 	"time"
 )
 
@@ -54,6 +55,17 @@ func ListSessions() []Header {
 
 		headers = append(headers, header)
 	}
+
+	// sort by created_at desc
+	slices.SortFunc(headers, func(a, b Header) int {
+		if a == b {
+			return 0
+		} else if a.CreatedAt.Before(b.CreatedAt) {
+			return 1
+		} else {
+			return -1
+		}
+	})
 
 	return headers
 }
