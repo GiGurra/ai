@@ -9,7 +9,6 @@ import (
 	"github.com/gigurra/ai/providers/openai_provider"
 	"github.com/spf13/cobra"
 	"log/slog"
-	"os"
 )
 
 func main() {
@@ -53,12 +52,7 @@ func main() {
 					break // stream done
 				}
 				if res.Err != nil {
-					slog.Error(fmt.Sprintf("Failed to receive stream response: %v", res.Err))
-					os.Exit(1)
-				}
-				if res.Resp == nil {
-					slog.Error(fmt.Sprintf("Received nil response"))
-					os.Exit(1)
+					common.FailAndExit(1, fmt.Sprintf("Failed to receive stream response: %v", res.Err))
 				}
 				if len(res.Resp.GetChoices()) == 0 {
 					continue
