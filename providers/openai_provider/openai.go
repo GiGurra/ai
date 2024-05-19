@@ -123,6 +123,7 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 					Content: message.Content,
 				}
 			}),
+			Temperature: float32(o.cfg.Temperature),
 		},
 	)
 	if err != nil {
@@ -197,7 +198,8 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 				Content: message.Content,
 			}
 		}),
-		Stream: true,
+		Temperature: float32(o.cfg.Temperature),
+		Stream:      true,
 	}
 	remoteStream, err := o.client.CreateChatCompletionStream(
 		context.Background(),
