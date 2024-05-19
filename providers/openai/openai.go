@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"sort"
 )
 
 type OpenAIConfig struct {
@@ -69,6 +70,11 @@ func ListModels(cfg OpenAIConfig) (OpenAIModelListing, error) {
 	if err != nil {
 		return OpenAIModelListing{}, fmt.Errorf(".ListModels(..): failed to unmarshal response body: %w", err)
 	}
+
+	// sort the models by id
+	sort.Slice(listing.Data, func(i, j int) bool {
+		return listing.Data[i].ID < listing.Data[j].ID
+	})
 
 	return listing, nil
 }

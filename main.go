@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/GiGurra/boa/pkg/boa"
 	"github.com/gigurra/ai/providers/openai"
@@ -14,6 +15,7 @@ type CliParams struct {
 	Quiet    boa.Required[bool]   `descr:"Quiet mode, requires no user input" short:"q" default:"false"`
 	Provider boa.Required[string] `descr:"AI provider to use" short:"p" default:"openai"`
 	Model    boa.Required[string] `descr:"Model to use" short:"m" default:"gpt-4o"`
+	Verbose  boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false"`
 }
 
 type StoredConfig struct {
@@ -38,14 +40,20 @@ func main() {
 		Long:   `See the README.MD for more information`,
 		Run: func(cmd *cobra.Command, args []string) {
 
+			// if verbose is set, set slog to debug
+			if p.Verbose.Value() {
+				slog.SetLogLoggerLevel(slog.LevelDebug)
+			}
+
 			// check that file exists
 			homeDir, err := os.UserHomeDir()
 			if err != nil {
 				panic(fmt.Errorf("failed to get home dir: %w", err))
 			}
 
-			slog.Info(fmt.Sprintf("Will use provider: %s", p.Provider.Value()))
-			slog.Info("Will load config from " + homeDir + "/.config/gigurra/ai/config.yaml")
+			slog.Debug(fmt.Sprintf("Will use provider: %s", p.Provider.Value()))
+			slog.Debug(fmt.Sprintf("Will use model: %s", p.Model.Value()))
+			slog.Debug("Will load config from " + homeDir + "/.config/gigurra/ai/config.yaml")
 
 			_, err = os.Stat(homeDir + "/.config/gigurra/ai/config.yaml")
 			if err != nil {
@@ -70,8 +78,9 @@ func main() {
 			}
 
 			// load config
+			configFilePath := homeDir + "/.config/gigurra/ai/config.yaml"
 			cfg := StoredConfig{}
-			yamlBytes, err := os.ReadFile(homeDir + "/.config/gigurra/ai/config.yaml")
+			yamlBytes, err := os.ReadFile(configFilePath)
 			if err != nil {
 				panic(fmt.Errorf("failed to read config file: %w", err))
 			}
@@ -85,7 +94,7 @@ func main() {
 			case "openai":
 				// check that we have the required config
 				if cfg.OpenAI.APIKey == "" {
-					slog.Error("No openai api key found in config file")
+					slog.Error("No openai api key found in config file: " + configFilePath)
 					os.Exit(1)
 				}
 				models, err := openai.ListModels(cfg.OpenAI)
@@ -93,15 +102,32 @@ func main() {
 					slog.Error(fmt.Sprintf("Failed to list models: %v", err))
 					os.Exit(1)
 				}
-				slog.Info(fmt.Sprintf("Found %d models", len(models.Data)))
-				for _, model := range models.Data {
-					slog.Info(fmt.Sprintf(" - %s", model.ID))
+
+				printModels := func(level slog.Level) {
+					slog.Log(context.Background(), level, "Available models:")
+					for _, model := range models.Data {
+						slog.Log(context.Background(), level, fmt.Sprintf(" - %s", model.ID))
+					}
 				}
+
+				// Check that the requested model exists
+				found := false
+				for _, model := range models.Data {
+					if model.ID == p.Model.Value() {
+						found = true
+					}
+				}
+				if !found {
+					slog.Error(fmt.Sprintf("Model '%s' not found. (Maybe you don't have access to it?)", p.Model.Value()))
+					printModels(slog.LevelError)
+					os.Exit(1)
+				}
+
+				printModels(slog.LevelDebug)
+
 			default:
 				slog.Error(fmt.Sprintf("Unknown provider: %s", p.Provider.Value()))
 			}
-
-			// load config from <home>/.config/gigurra/ai/config.yaml
 		},
 	}.ToApp()
 }
