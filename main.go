@@ -39,7 +39,15 @@ func main() {
 			state := session.LoadSession(sessionId)
 			slog.Info(fmt.Sprintf("state: %+v", state))
 
-			os.Exit(0)
+			messageHistory := func() []domain.Message {
+				var messages []domain.Message
+				for _, entry := range state.History {
+					if entry.Type == "message" {
+						messages = append(messages, entry.Message)
+					}
+				}
+				return messages
+			}()
 
 			// if verbose is set, set slog to debug
 			if p.Verbose.Value() {
@@ -60,15 +68,18 @@ func main() {
 				question = fmt.Sprintf("%s\n%s", question, footer)
 			}
 
+			newMessage := domain.Message{
+				SourceType: domain.User,
+				Content:    question,
+			}
+
 			stream := provider.BasicAskStream(domain.Question{
-				Messages: []domain.Message{
-					{
-						SourceType: domain.User,
-						Content:    question,
-					},
-				},
+				Messages: append(messageHistory, newMessage),
 			})
 
+			state.AddMessage(newMessage)
+
+			accum := ""
 			for {
 				res, ok := <-stream
 				if !ok {
@@ -81,8 +92,17 @@ func main() {
 					continue
 				}
 
+				accum += res.Resp.GetChoices()[0].Message.Content
 				fmt.Printf("%s", res.Resp.GetChoices()[0].Message.Content)
 			}
+
+			// Save the session
+			state.AddMessage(domain.Message{
+				SourceType: domain.Assistant,
+				Content:    accum,
+			})
+
+			session.StoreSession(state)
 		},
 	}.ToApp()
 }

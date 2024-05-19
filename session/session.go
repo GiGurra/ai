@@ -1,6 +1,7 @@
 package session
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gigurra/ai/common"
@@ -32,7 +33,7 @@ type Header struct {
 func ListSessions() []Header {
 	// list dirs inside session dir
 	// for each dir, read header file
-	sessionDir := SessionDir()
+	sessionDir := Dir()
 
 	// list dirs inside session dir
 	dirEntries, err := os.ReadDir(sessionDir)
@@ -58,7 +59,7 @@ func ListSessions() []Header {
 }
 
 func LoadSession(sessionID string) State {
-	sessionDir := SessionDir() + "/" + sessionID
+	sessionDir := Dir() + "/" + sessionID
 	_, err := util.ReadFaileAsJson[Header](sessionDir + "/header.json")
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -83,7 +84,39 @@ func LoadSession(sessionID string) State {
 	return state
 }
 
-func SessionDir() string {
+func StoreSession(state State) {
+	sessionDir := Dir() + "/" + state.SessionID
+	err := os.MkdirAll(sessionDir, 0755)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to create session dir: %v", err))
+	}
+
+	headerBytes, err := json.Marshal(state.Header)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to marshal session header: %v", err))
+	}
+	stateBytes, err := json.Marshal(state)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to marshal session state: %v", err))
+	}
+	err = os.WriteFile(sessionDir+"/header.json", headerBytes, 0644)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to write session header: %v", err))
+	}
+	err = os.WriteFile(sessionDir+"/state.json", stateBytes, 0644)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to write session state: %v", err))
+	}
+}
+
+func Dir() string {
 	appDir := common.AppDir()
 	return appDir + "/sessions"
+}
+
+func (s *State) AddMessage(message domain.Message) {
+	s.History = append(s.History, HistoryEntry{
+		Type:    "message",
+		Message: message,
+	})
 }

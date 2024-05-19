@@ -10,7 +10,7 @@ const (
 )
 
 type Message struct {
-	SourceType SourceType // system, user or response
+	SourceType SourceType // system, user or assistant
 	Content    string     // the message content
 }
 
