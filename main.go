@@ -116,37 +116,42 @@ func main() {
 					os.Exit(1)
 				}
 				provider = openai.NewOpenAIProvider(cfg.OpenAI)
-				models, err := provider.ListModels()
-				if err != nil {
-					slog.Error(fmt.Sprintf("Failed to list models: %v", err))
-					os.Exit(1)
-				}
 
-				printModels := func(level slog.Level) {
+				printAndListModels := func(level slog.Level) []string {
 					slog.Log(context.Background(), level, "Available models:")
+
+					models, err := provider.ListModels()
+					if err != nil {
+						slog.Error(fmt.Sprintf("Failed to list models: %v", err))
+						os.Exit(1)
+					}
 					for _, model := range models {
 						slog.Log(context.Background(), level, fmt.Sprintf(" - %s", model))
 					}
+
+					return models
 				}
 
-				if !lo.Contains(models, cfg.OpenAI.Model) {
-					slog.Error(fmt.Sprintf("Model '%s' not found. (Maybe you don't have access to it?)", cfg.OpenAI.Model))
-					printModels(slog.LevelError)
-					os.Exit(1)
-				}
+				if p.Verbose.Value() {
+					models := printAndListModels(slog.LevelDebug)
 
-				printModels(slog.LevelDebug)
+					if !lo.Contains(models, cfg.OpenAI.Model) {
+						slog.Error(fmt.Sprintf("Model '%s' not found. (Maybe you don't have access to it?)", cfg.OpenAI.Model))
+						os.Exit(1)
+					}
+				}
 
 			default:
 				slog.Error(fmt.Sprintf("Unknown provider: %s", cfg.Provider))
 				os.Exit(1)
 			}
 
+			slog.Info("Asking question")
 			res, err := provider.BasicAsk(domain.Question{
 				Messages: []domain.Message{
 					{
 						SourceType: domain.User,
-						Content:    "Hello, how are you?",
+						Content:    "please say hello",
 					},
 				},
 			})
@@ -154,6 +159,7 @@ func main() {
 				slog.Error(fmt.Sprintf("Failed to ask question: %v", err))
 				os.Exit(1)
 			}
+			slog.Info("Got response")
 
 			slog.Info(fmt.Sprintf("Response: %v", res))
 		},
