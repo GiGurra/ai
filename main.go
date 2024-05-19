@@ -37,7 +37,7 @@ func main() {
 				Run: func(cmd *cobra.Command, args []string) {
 					sessions := session.ListSessions()
 					for _, s := range sessions {
-						fmt.Printf(" - %s (created %v)\n", s.Name, s.CreatedAt.Format("2006-01-02 15:04:05"))
+						fmt.Printf(" - %s (iTokens=%d, oTokens=%d, created %v)\n", s.Name, s.InputTokens, s.OutputTokens, s.CreatedAt.Format("2006-01-02 15:04:05"))
 					}
 				},
 			}.ToCmd(),
@@ -101,6 +101,9 @@ func main() {
 
 				accum += res.Resp.GetChoices()[0].Message.Content
 				fmt.Printf("%s", res.Resp.GetChoices()[0].Message.Content)
+
+				state.InputTokens += res.Resp.GetChoices()[0].InputTokens
+				state.OutputTokens += res.Resp.GetChoices()[0].OutputTokens
 			}
 
 			// Save the session
