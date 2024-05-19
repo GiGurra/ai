@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/GiGurra/boa/pkg/boa"
 	"github.com/gigurra/ai/domain"
@@ -56,9 +57,9 @@ func main() {
 			if err != nil {
 				panic(fmt.Errorf("failed to get home dir: %w", err))
 			}
+			configFilePath := homeDir + "/.config/gigurra/ai/config.yaml"
 
-			slog.Debug(fmt.Sprintf("Will use provider: %s", p.Provider.Value()))
-			slog.Debug("Will load config from " + homeDir + "/.config/gigurra/ai/config.yaml")
+			slog.Debug("Will load config from " + configFilePath)
 
 			_, err = os.Stat(homeDir + "/.config/gigurra/ai/config.yaml")
 			if err != nil {
@@ -83,7 +84,6 @@ func main() {
 			}
 
 			// load config
-			configFilePath := homeDir + "/.config/gigurra/ai/config.yaml"
 			cfg := StoredConfig{}
 			yamlBytes, err := os.ReadFile(configFilePath)
 			if err != nil {
@@ -162,7 +162,13 @@ func main() {
 			}
 			slog.Info("Got response")
 
-			slog.Info(fmt.Sprintf("Response: %v", res))
+			respJson, err := json.MarshalIndent(res, "", "  ")
+			if err != nil {
+				slog.Error(fmt.Sprintf("Failed to marshal response: %v", err))
+				os.Exit(1)
+			}
+
+			slog.Info(fmt.Sprintf("Response: %v", string(respJson)))
 		},
 	}.ToApp()
 }
