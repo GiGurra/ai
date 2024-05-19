@@ -18,9 +18,30 @@ type Question struct {
 	Messages []Message
 }
 
+type Choice struct {
+	Index   int
+	Message Message
+}
+
+type Usage struct {
+	PromptTokens     int
+	CompletionTokens int
+	TotalTokens      int
+}
+
+type Response interface {
+	GetID() string
+	GetObjectType() string
+	GetCreated() int
+	GetModel() string
+	GetChoices() []Choice
+	GetUsage() Usage
+	GetSystemFingerprint() any
+}
+
 type Provider interface {
 	ListModels() ([]string, error)
 
 	// BasicAsk asks a question and returns the answer. The most primitive use case.
-	BasicAsk(question Question) (string, error)
+	BasicAsk(question Question) (Response, error)
 }

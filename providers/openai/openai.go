@@ -13,6 +13,7 @@ type OpenAIConfig struct {
 	Organization string  `yaml:"organization"`
 	Project      string  `yaml:"project"`
 	Temperature  float64 `yaml:"temperature"`
+	Model        string  `yaml:"model"`
 }
 
 const baseUrl = "https://api.openai.com/v1/"
@@ -44,10 +45,105 @@ type OpenAIBasicAskRequest struct {
 	Temperature float64         `json:"temperature"`
 }
 
-func (o OpenAIProvider) BasicAsk(question domain.Question) (string, error) {
-	//TODO implement me
+type OpenAIChoice struct {
+	Index        int           `json:"index"`
+	Message      OpenAIMessage `json:"message"`
+	LogProbs     any           `json:"logprobs"`
+	FinishReason string        `json:"finish_reason"`
+}
 
-	panic("implement me")
+type OpenaiBasicAskUsage struct {
+	PromptTokens     int `json:"prompt_tokens"`
+	CompletionTokens int `json:"completion_tokens"`
+	TotalTokens      int `json:"total_tokens"`
+}
+
+type OpenAIBasicAskResponse struct {
+	ID                string              `json:"id"`
+	Object            string              `json:"object"` // will be set to "chat.completion"
+	Created           int                 `json:"created"`
+	Model             string              `json:"model"`
+	Choices           []OpenAIChoice      `json:"choices"`
+	Usage             OpenaiBasicAskUsage `json:"usage"`
+	SystemFingerprint any                 `json:"system_fingerprint"`
+}
+
+func (o OpenAIBasicAskResponse) GetID() string {
+	return o.ID
+}
+
+func (o OpenAIBasicAskResponse) GetObjectType() string {
+	return o.Object
+}
+
+func (o OpenAIBasicAskResponse) GetCreated() int {
+	return o.Created
+}
+
+func (o OpenAIBasicAskResponse) GetModel() string {
+	return o.Model
+}
+
+func (o OpenAIBasicAskResponse) GetChoices() []domain.Choice {
+	return lo.Map(o.Choices, func(item OpenAIChoice, index int) domain.Choice {
+		return domain.Choice{
+			Index: 0,
+			Message: domain.Message{
+				SourceType: domain.SourceType(item.Message.Role),
+				Content:    item.Message.Content,
+			},
+		}
+	})
+}
+
+func (o OpenAIBasicAskResponse) GetUsage() domain.Usage {
+	return domain.Usage{
+		PromptTokens:     o.Usage.PromptTokens,
+		CompletionTokens: o.Usage.CompletionTokens,
+		TotalTokens:      o.Usage.TotalTokens,
+	}
+}
+
+func (o OpenAIBasicAskResponse) GetSystemFingerprint() any {
+	return o.SystemFingerprint
+}
+
+// prove OpenAIBasicAskResponse implements the Response interface
+var _ domain.Response = OpenAIBasicAskResponse{}
+
+func (o OpenAIProvider) authHeaders() map[string]string {
+	return filterOutEmptyValues(map[string]string{
+		"Authorization":       "Bearer " + o.cfg.APIKey,
+		"OpenAI-Organization": o.cfg.Organization,
+		"OpenAI-Project":      o.cfg.Project,
+	})
+}
+
+func (o OpenAIProvider) BasicAsk(question domain.Question) (domain.Response, error) {
+
+	url := baseUrl + "chat/completions"
+
+	requestData := OpenAIBasicAskRequest{
+		Model: o.cfg.Model,
+		Messages: lo.Map(question.Messages, func(message domain.Message, index int) OpenAIMessage {
+			return OpenAIMessage{
+				Role:    string(message.SourceType),
+				Content: message.Content,
+			}
+		}),
+		Temperature: o.cfg.Temperature,
+	}
+
+	resp, err := util.HttpPostRecvJson[OpenAIBasicAskResponse](url, util.PostParams{
+		Headers: o.authHeaders(),
+		Body:    requestData,
+	})
+	if err != nil {
+		var zero OpenAIBasicAskResponse
+		return zero, fmt.Errorf("failed to ask question: %w", err)
+	}
+
+	return resp, nil
 }
 
 // prove that OpenAIProvider implements the Provider interface

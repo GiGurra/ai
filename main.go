@@ -11,18 +11,20 @@ import (
 	"gopkg.in/yaml.v3"
 	"log/slog"
 	"os"
+	"strings"
 )
 
 type CliParams struct {
 	Quiet       boa.Required[bool]    `descr:"Quiet mode, requires no user input" short:"q" default:"false"`
-	Provider    boa.Required[string]  `descr:"AI provider to use" short:"p" default:"openai"`
-	Model       boa.Required[string]  `descr:"Model to use" short:"m" default:"gpt-4o"`
 	Verbose     boa.Required[bool]    `descr:"Verbose output" short:"v" default:"false"`
+	Provider    boa.Optional[string]  `descr:"AI provider to use" short:"p"`
+	Model       boa.Optional[string]  `descr:"Model to use" short:"m"`
 	Temperature boa.Optional[float64] `descr:"Temperature to use" short:"t" `
 }
 
 type StoredConfig struct {
-	OpenAI openai.OpenAIConfig `yaml:"openai"`
+	Provider string              `yaml:"provider"`
+	OpenAI   openai.OpenAIConfig `yaml:"openai"`
 }
 
 var defaultConfig = StoredConfig{}
@@ -55,7 +57,6 @@ func main() {
 			}
 
 			slog.Debug(fmt.Sprintf("Will use provider: %s", p.Provider.Value()))
-			slog.Debug(fmt.Sprintf("Will use model: %s", p.Model.Value()))
 			slog.Debug("Will load config from " + homeDir + "/.config/gigurra/ai/config.yaml")
 
 			_, err = os.Stat(homeDir + "/.config/gigurra/ai/config.yaml")
@@ -93,12 +94,22 @@ func main() {
 				panic(fmt.Errorf("failed to unmarshal config file: %w", err))
 			}
 
+			if p.Provider.HasValue() {
+				cfg.Provider = *p.Provider.Value()
+			}
+
 			var provider domain.Provider
-			switch p.Provider.Value() {
+			switch strings.TrimSpace(cfg.Provider) {
+			case "":
+				slog.Error("No provider found in config file: " + configFilePath)
+				os.Exit(1)
 			case "openai":
 				// check that we have the required config
 				if p.Temperature.HasValue() {
 					cfg.OpenAI.Temperature = *p.Temperature.Value()
+				}
+				if p.Model.HasValue() {
+					cfg.OpenAI.Model = *p.Model.Value()
 				}
 				if cfg.OpenAI.APIKey == "" {
 					slog.Error("No openai api key found in config file: " + configFilePath)
@@ -118,8 +129,8 @@ func main() {
 					}
 				}
 
-				if !lo.Contains(models, p.Model.Value()) {
-					slog.Error(fmt.Sprintf("Model '%s' not found. (Maybe you don't have access to it?)", p.Model.Value()))
+				if !lo.Contains(models, cfg.OpenAI.Model) {
+					slog.Error(fmt.Sprintf("Model '%s' not found. (Maybe you don't have access to it?)", cfg.OpenAI.Model))
 					printModels(slog.LevelError)
 					os.Exit(1)
 				}
@@ -127,7 +138,8 @@ func main() {
 				printModels(slog.LevelDebug)
 
 			default:
-				slog.Error(fmt.Sprintf("Unknown provider: %s", p.Provider.Value()))
+				slog.Error(fmt.Sprintf("Unknown provider: %s", cfg.Provider))
+				os.Exit(1)
 			}
 
 			res, err := provider.BasicAsk(domain.Question{
