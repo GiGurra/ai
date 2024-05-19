@@ -1,11 +1,13 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"github.com/GiGurra/boa/pkg/boa"
 	"github.com/gigurra/ai/common"
 	"github.com/gigurra/ai/providers/openai_provider"
 	"gopkg.in/yaml.v3"
+	"io/fs"
 	"log/slog"
 	"os"
 	"strings"
@@ -42,7 +44,7 @@ func LoadCfgFile() (string, Config) {
 
 	_, err := os.Stat(filePath)
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			slog.Info("No config file found, will create one")
 			yamlBytes, err := yaml.Marshal(StoredConfig{
 				Provider: "openai",

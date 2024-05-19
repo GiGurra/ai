@@ -1,10 +1,12 @@
 package session
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gigurra/ai/common"
 	"github.com/gigurra/ai/domain"
 	"github.com/gigurra/ai/util"
+	"io/fs"
 	"log/slog"
 	"os"
 	"time"
@@ -59,7 +61,7 @@ func LoadSession(sessionID string) State {
 	sessionDir := SessionDir() + "/" + sessionID
 	_, err := util.ReadFaileAsJson[Header](sessionDir + "/header.json")
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			return State{
 				Header: Header{
 					SessionID: sessionID,
