@@ -32,7 +32,7 @@ type Usage struct {
 type Response interface {
 	GetID() string
 	GetObjectType() string
-	GetCreated() int
+	GetCreated() int64
 	GetModel() string
 	GetChoices() []Choice
 	GetUsage() Usage

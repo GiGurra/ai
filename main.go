@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/GiGurra/boa/pkg/boa"
 	"github.com/gigurra/ai/domain"
-	"github.com/gigurra/ai/providers/openai"
+	"github.com/gigurra/ai/providers/openai_provider"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -25,8 +25,8 @@ type CliParams struct {
 }
 
 type StoredConfig struct {
-	Provider string        `yaml:"provider"`
-	OpenAI   openai.Config `yaml:"openai"`
+	Provider string                 `yaml:"provider"`
+	OpenAI   openai_provider.Config `yaml:"openai"`
 }
 
 var defaultConfig = StoredConfig{}
@@ -116,7 +116,7 @@ func main() {
 					slog.Error("No openai api key found in config file: " + configFilePath)
 					os.Exit(1)
 				}
-				provider = openai.NewOpenAIProvider(cfg.OpenAI)
+				provider = openai_provider.NewOpenAIProvider(cfg.OpenAI)
 
 				printAndListModels := func(level slog.Level) []string {
 					slog.Log(context.Background(), level, "Available models:")

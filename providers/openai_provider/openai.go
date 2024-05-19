@@ -1,10 +1,11 @@
-package openai
+package openai_provider
 
 import (
+	"context"
 	"fmt"
 	"github.com/gigurra/ai/domain"
-	"github.com/gigurra/ai/util"
 	"github.com/samber/lo"
+	"github.com/sashabaranov/go-openai"
 	"sort"
 )
 
@@ -16,22 +17,9 @@ type Config struct {
 	Model        string  `yaml:"model"`
 }
 
-const baseUrl = "https://api.openai.com/v1/"
-
-type ModelListing struct {
-	Object string  `json:"object"` // will be set to "list"
-	Data   []Model `json:"data"`
-}
-
-type Model struct {
-	ID        string `json:"id"`
-	Object    string `json:"object"` // will be set to "model"
-	CreatedAt int    `json:"created"`
-	OwnedBy   string `json:"owned_by"`
-}
-
 type Provider struct {
-	cfg Config
+	cfg    Config
+	client *openai.Client
 }
 
 type Message struct {
@@ -61,7 +49,7 @@ type BasicAskUsage struct {
 type BasicAskResponse struct {
 	ID                string        `json:"id"`
 	Object            string        `json:"object"` // will be set to "chat.completion"
-	Created           int           `json:"created"`
+	Created           int64         `json:"created"`
 	Model             string        `json:"model"`
 	Choices           []Choice      `json:"choices"`
 	Usage             BasicAskUsage `json:"usage"`
@@ -76,7 +64,7 @@ func (o BasicAskResponse) GetObjectType() string {
 	return o.Object
 }
 
-func (o BasicAskResponse) GetCreated() int {
+func (o BasicAskResponse) GetCreated() int64 {
 	return o.Created
 }
 
@@ -121,26 +109,42 @@ func (o Provider) authHeaders() map[string]string {
 
 func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 
-	url := baseUrl + "chat/completions"
-
-	requestData := BasicAskRequest{
-		Model: o.cfg.Model,
-		Messages: lo.Map(question.Messages, func(message domain.Message, index int) Message {
-			return Message{
-				Role:    string(message.SourceType),
-				Content: message.Content,
-			}
-		}),
-		Temperature: o.cfg.Temperature,
-	}
-
-	resp, err := util.HttpPostRecvJson[BasicAskResponse](url, util.PostParams{
-		Headers: o.authHeaders(),
-		Body:    requestData,
-	})
+	res, err := o.client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: o.cfg.Model,
+			Messages: lo.Map(question.Messages, func(message domain.Message, index int) openai.ChatCompletionMessage {
+				return openai.ChatCompletionMessage{
+					Role:    string(message.SourceType),
+					Content: message.Content,
+				}
+			}),
+		},
+	)
 	if err != nil {
 		var zero BasicAskResponse
 		return zero, fmt.Errorf("failed to ask question: %w", err)
+	}
+
+	resp := BasicAskResponse{
+		ID:      res.ID,
+		Object:  res.Object,
+		Created: res.Created,
+		Model:   res.Model,
+		Choices: lo.Map(res.Choices, func(item openai.ChatCompletionChoice, index int) Choice {
+			return Choice{
+				Index:        item.Index,
+				Message:      Message{Role: item.Message.Role, Content: item.Message.Content},
+				LogProbs:     item.LogProbs,
+				FinishReason: string(item.FinishReason),
+			}
+		}),
+		Usage: BasicAskUsage{
+			PromptTokens:     res.Usage.PromptTokens,
+			CompletionTokens: res.Usage.CompletionTokens,
+			TotalTokens:      res.Usage.TotalTokens,
+		},
+		SystemFingerprint: res.SystemFingerprint,
 	}
 
 	return resp, nil
@@ -150,7 +154,13 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 var _ domain.Provider = &Provider{}
 
 func NewOpenAIProvider(cfg Config) *Provider {
-	return &Provider{cfg: cfg}
+
+	client := openai.NewClient(cfg.APIKey)
+
+	return &Provider{
+		cfg:    cfg,
+		client: client,
+	}
 }
 
 func filterOutEmptyValues(mapIn map[string]string) map[string]string {
@@ -165,25 +175,17 @@ func filterOutEmptyValues(mapIn map[string]string) map[string]string {
 
 func (o Provider) ListModels() ([]string, error) {
 
-	url := baseUrl + "models"
-
-	listing, err := util.HttpGetRecvJson[ModelListing](url, util.GetParams{
-		Headers: filterOutEmptyValues(map[string]string{
-			"Authorization":       "Bearer " + o.cfg.APIKey,
-			"OpenAI-Organization": o.cfg.Organization,
-			"OpenAI-Project":      o.cfg.Project,
-		}),
-	})
+	res, err := o.client.ListModels(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list models: %w", err)
 	}
 
 	// sort the models by id
-	sort.Slice(listing.Data, func(i, j int) bool {
-		return listing.Data[i].ID < listing.Data[j].ID
+	sort.Slice(res.Models, func(i, j int) bool {
+		return res.Models[i].ID < res.Models[j].ID
 	})
 
-	return lo.Map(listing.Data, func(item Model, index int) string {
+	return lo.Map(res.Models, func(item openai.Model, index int) string {
 		return item.ID
 	}), nil
 }
