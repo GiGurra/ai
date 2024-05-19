@@ -97,7 +97,8 @@ func main() {
 					slog.Error("No openai api key found in config file: " + configFilePath)
 					os.Exit(1)
 				}
-				models, err := openai.ListModels(cfg.OpenAI)
+				provider := openai.NewOpenAIProvider(cfg.OpenAI)
+				models, err := provider.ListModels()
 				if err != nil {
 					slog.Error(fmt.Sprintf("Failed to list models: %v", err))
 					os.Exit(1)
@@ -105,15 +106,15 @@ func main() {
 
 				printModels := func(level slog.Level) {
 					slog.Log(context.Background(), level, "Available models:")
-					for _, model := range models.Data {
-						slog.Log(context.Background(), level, fmt.Sprintf(" - %s", model.ID))
+					for _, model := range models {
+						slog.Log(context.Background(), level, fmt.Sprintf(" - %s", model))
 					}
 				}
 
 				// Check that the requested model exists
 				found := false
-				for _, model := range models.Data {
-					if model.ID == p.Model.Value() {
+				for _, model := range models {
+					if model == p.Model.Value() {
 						found = true
 					}
 				}

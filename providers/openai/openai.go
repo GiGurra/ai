@@ -3,9 +3,9 @@ package openai
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"log/slog"
-	"net/http"
+	"github.com/gigurra/ai/domain"
+	"github.com/gigurra/ai/util"
+	"github.com/samber/lo"
 	"sort"
 )
 
@@ -29,46 +29,55 @@ type OpenAIModel struct {
 	OwnedBy   string `json:"owned_by"`
 }
 
-func ListModels(cfg OpenAIConfig) (OpenAIModelListing, error) {
+type OpenAIProvider struct {
+	cfg OpenAIConfig
+}
+
+func (o OpenAIProvider) BasicAsk(question string) (string, error) {
+	//TODO implement me
+
+	panic("implement me")
+}
+
+// prove that OpenAIProvider implements the Provider interface
+var _ domain.Provider = &OpenAIProvider{}
+
+func NewOpenAIProvider(cfg OpenAIConfig) *OpenAIProvider {
+	return &OpenAIProvider{cfg: cfg}
+}
+
+func filterOutEmptyValues(mapIn map[string]string) map[string]string {
+	mapOut := make(map[string]string)
+	for k, v := range mapIn {
+		if v != "" {
+			mapOut[k] = v
+		}
+	}
+	return mapOut
+}
+
+func (o OpenAIProvider) ListModels() ([]string, error) {
+
 	url := baseUrl + "models"
 
-	req, err := http.NewRequest("GET", url, nil)
+	res, err := util.HttpClient.R().SetHeaders(filterOutEmptyValues(map[string]string{
+		"Authorization":       "Bearer " + o.cfg.APIKey,
+		"OpenAI-Organization": o.cfg.Organization,
+		"OpenAI-Project":      o.cfg.Project,
+	})).Get(url)
+
 	if err != nil {
-		return OpenAIModelListing{}, fmt.Errorf(".ListModels(..): failed to create request: %w", err)
+		return nil, fmt.Errorf(".ListModels(..): failed to send request: %w", err)
 	}
 
-	if cfg.APIKey == "" {
-		return OpenAIModelListing{}, fmt.Errorf(".ListModels(..): API key is required, but none was provided")
-	}
-	req.Header.Set("Authorization", "Bearer "+cfg.APIKey)
-	if cfg.Organization != "" {
-		req.Header.Set("OpenAI-Organization", cfg.Organization)
-	}
-	if cfg.Project != "" {
-		req.Header.Set("OpenAI-Project", cfg.Project)
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return OpenAIModelListing{}, fmt.Errorf(".ListModels(..): failed to send request: %w", err)
-	}
-
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			slog.Error("Failed to close response body: %v", err)
-		}
-	}(resp.Body)
-
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return OpenAIModelListing{}, fmt.Errorf(".ListModels(..): failed to read response: %w", err)
+	if res.StatusCode() != 200 {
+		return nil, fmt.Errorf(".ListModels(..): Unexpected status code: %d", res.StatusCode())
 	}
 
 	listing := OpenAIModelListing{}
-	err = json.Unmarshal(bodyBytes, &listing)
+	err = json.Unmarshal(res.Body(), &listing)
 	if err != nil {
-		return OpenAIModelListing{}, fmt.Errorf(".ListModels(..): failed to unmarshal response body: %w", err)
+		return nil, fmt.Errorf(".ListModels(..): failed to unmarshal response body: %w", err)
 	}
 
 	// sort the models by id
@@ -76,5 +85,7 @@ func ListModels(cfg OpenAIConfig) (OpenAIModelListing, error) {
 		return listing.Data[i].ID < listing.Data[j].ID
 	})
 
-	return listing, nil
+	return lo.Map(listing.Data, func(item OpenAIModel, index int) string {
+		return item.ID
+	}), nil
 }
