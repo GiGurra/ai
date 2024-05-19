@@ -33,7 +33,7 @@ func main() {
 		Long:   `See the README.MD for more information`,
 		SubCommands: []*cobra.Command{
 			boa.Wrap{
-				Use:   "list-sessions",
+				Use:   "sessions",
 				Short: "List all stored sessions",
 				Run: func(cmd *cobra.Command, args []string) {
 					sessions := session.ListSessions()
