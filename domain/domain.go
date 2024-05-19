@@ -13,5 +13,5 @@ type Provider interface {
 	ListModels() ([]string, error)
 
 	// BasicAsk asks a question and returns the answer. The most primitive use case.
-	BasicAsk(question string) (string, error)
+	BasicAsk(question Question) (string, error)
 }

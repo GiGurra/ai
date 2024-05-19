@@ -32,7 +32,7 @@ type OpenAIProvider struct {
 	cfg OpenAIConfig
 }
 
-func (o OpenAIProvider) BasicAsk(question string) (string, error) {
+func (o OpenAIProvider) BasicAsk(question domain.Question) (string, error) {
 	//TODO implement me
 
 	panic("implement me")
