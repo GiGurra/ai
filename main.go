@@ -68,7 +68,7 @@ func main() {
 
 			// if stdin is not empty, add it at the bottom of the first message
 			if stdInContents != "" {
-				footer := fmt.Sprintf("\n Additional info/data: \n %s", stdInContents)
+				footer := fmt.Sprintf("\n Attached additional info/data: \n %s", stdInContents)
 				messages[0].Content = fmt.Sprintf("%s\n%s", messages[0].Content, footer)
 			}
 
