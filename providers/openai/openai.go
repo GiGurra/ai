@@ -9,9 +9,10 @@ import (
 )
 
 type OpenAIConfig struct {
-	APIKey       string `yaml:"api_key"`
-	Organization string `yaml:"organization"`
-	Project      string `yaml:"project"`
+	APIKey       string  `yaml:"api_key"`
+	Organization string  `yaml:"organization"`
+	Project      string  `yaml:"project"`
+	Temperature  float64 `yaml:"temperature"`
 }
 
 const baseUrl = "https://api.openai.com/v1/"
@@ -30,6 +31,17 @@ type OpenAIModel struct {
 
 type OpenAIProvider struct {
 	cfg OpenAIConfig
+}
+
+type OpenAIMessage struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+type OpenAIBasicAskRequest struct {
+	Model       string          `json:"model"`
+	Messages    []OpenAIMessage `json:"messages"`
+	Temperature float64         `json:"temperature"`
 }
 
 func (o OpenAIProvider) BasicAsk(question domain.Question) (string, error) {
@@ -59,7 +71,7 @@ func (o OpenAIProvider) ListModels() ([]string, error) {
 
 	url := baseUrl + "models"
 
-	listing, err := util.HttpGetJson[OpenAIModelListing](url, util.GetParams{
+	listing, err := util.HttpGetRecvJson[OpenAIModelListing](url, util.GetParams{
 		Headers: filterOutEmptyValues(map[string]string{
 			"Authorization":       "Bearer " + o.cfg.APIKey,
 			"OpenAI-Organization": o.cfg.Organization,

@@ -1,8 +1,17 @@
 package domain
 
+type SourceType string
+
+// Using openai naming here, we can change it later
+const (
+	System    SourceType = "system"
+	User      SourceType = "user"
+	Assistant SourceType = "assistant"
+)
+
 type Message struct {
-	SourceType string // system, user or response
-	Content    string // the message content
+	SourceType SourceType // system, user or response
+	Content    string     // the message content
 }
 
 type Question struct {

@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/GiGurra/boa/pkg/boa"
+	"github.com/gigurra/ai/domain"
 	"github.com/gigurra/ai/providers/openai"
+	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 	"log/slog"
@@ -12,10 +14,11 @@ import (
 )
 
 type CliParams struct {
-	Quiet    boa.Required[bool]   `descr:"Quiet mode, requires no user input" short:"q" default:"false"`
-	Provider boa.Required[string] `descr:"AI provider to use" short:"p" default:"openai"`
-	Model    boa.Required[string] `descr:"Model to use" short:"m" default:"gpt-4o"`
-	Verbose  boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false"`
+	Quiet       boa.Required[bool]    `descr:"Quiet mode, requires no user input" short:"q" default:"false"`
+	Provider    boa.Required[string]  `descr:"AI provider to use" short:"p" default:"openai"`
+	Model       boa.Required[string]  `descr:"Model to use" short:"m" default:"gpt-4o"`
+	Verbose     boa.Required[bool]    `descr:"Verbose output" short:"v" default:"false"`
+	Temperature boa.Optional[float64] `descr:"Temperature to use" short:"t" `
 }
 
 type StoredConfig struct {
@@ -90,14 +93,18 @@ func main() {
 				panic(fmt.Errorf("failed to unmarshal config file: %w", err))
 			}
 
+			var provider domain.Provider
 			switch p.Provider.Value() {
 			case "openai":
 				// check that we have the required config
+				if p.Temperature.HasValue() {
+					cfg.OpenAI.Temperature = *p.Temperature.Value()
+				}
 				if cfg.OpenAI.APIKey == "" {
 					slog.Error("No openai api key found in config file: " + configFilePath)
 					os.Exit(1)
 				}
-				provider := openai.NewOpenAIProvider(cfg.OpenAI)
+				provider = openai.NewOpenAIProvider(cfg.OpenAI)
 				models, err := provider.ListModels()
 				if err != nil {
 					slog.Error(fmt.Sprintf("Failed to list models: %v", err))
@@ -111,14 +118,7 @@ func main() {
 					}
 				}
 
-				// Check that the requested model exists
-				found := false
-				for _, model := range models {
-					if model == p.Model.Value() {
-						found = true
-					}
-				}
-				if !found {
+				if !lo.Contains(models, p.Model.Value()) {
 					slog.Error(fmt.Sprintf("Model '%s' not found. (Maybe you don't have access to it?)", p.Model.Value()))
 					printModels(slog.LevelError)
 					os.Exit(1)
@@ -129,6 +129,21 @@ func main() {
 			default:
 				slog.Error(fmt.Sprintf("Unknown provider: %s", p.Provider.Value()))
 			}
+
+			res, err := provider.BasicAsk(domain.Question{
+				Messages: []domain.Message{
+					{
+						SourceType: domain.User,
+						Content:    "Hello, how are you?",
+					},
+				},
+			})
+			if err != nil {
+				slog.Error(fmt.Sprintf("Failed to ask question: %v", err))
+				os.Exit(1)
+			}
+
+			slog.Info(fmt.Sprintf("Response: %s", res))
 		},
 	}.ToApp()
 }

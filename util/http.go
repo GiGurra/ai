@@ -14,6 +14,13 @@ type GetParams struct {
 	OkStatusFn  func(statusCode int) bool
 }
 
+type PostParams struct {
+	QueryParams map[string]string
+	Headers     map[string]string
+	OkStatusFn  func(statusCode int) bool
+	Body        any
+}
+
 type StatusCodeError struct {
 	StatusCode int
 }
@@ -37,7 +44,7 @@ func (e FailedToParseResponse) Error() string {
 	return fmt.Sprintf("failed to parse response: %v", e.Err)
 }
 
-func HttpGetJson[T any](url string, params GetParams) (T, error) {
+func HttpGetRecvJson[T any](url string, params GetParams) (T, error) {
 
 	request := HttpClient.R()
 
@@ -73,6 +80,68 @@ func HttpGetJson[T any](url string, params GetParams) (T, error) {
 	}
 
 	var result T
+	err = json.Unmarshal(res.Body(), &result)
+	if err != nil {
+		return zero, FailedToParseResponse{Err: err}
+	}
+
+	return result, err
+}
+
+func HttpPostRecvJson[RespType any](url string, params PostParams) (RespType, error) {
+
+	request := HttpClient.R()
+
+	okStatusFn := func(statusCode int) bool {
+		if params.OkStatusFn != nil {
+			return params.OkStatusFn(statusCode)
+		} else {
+			return statusCode%100 == 2
+		}
+	}
+
+	if len(params.QueryParams) > 0 {
+		request.SetQueryParams(params.QueryParams)
+	}
+
+	if len(params.Headers) > 0 {
+		request.SetHeaders(params.Headers)
+	}
+
+	var zero RespType
+
+	if params.Body != nil {
+		// If it is a string or byte array, just set it as the body
+		switch params.Body.(type) {
+		case string:
+			request.SetBody(params.Body.(string))
+		case []byte:
+			request.SetBody(params.Body.([]byte))
+		default:
+			// serialize the body to json
+			bodyBytes, err := json.Marshal(params.Body)
+			if err != nil {
+				return zero, fmt.Errorf("failed to marshal body: %w", err)
+			}
+			request.SetBody(bodyBytes)
+			request.SetHeader("Content-Type", "application/json")
+		}
+	}
+
+	res, err := request.Post(url)
+	if err != nil {
+		return zero, err
+	}
+
+	if !okStatusFn(res.StatusCode()) {
+		return zero, StatusCodeError{StatusCode: res.StatusCode()}
+	}
+
+	if len(res.Body()) == 0 {
+		return zero, MissingResponseBody{}
+	}
+
+	var result RespType
 	err = json.Unmarshal(res.Body(), &result)
 	if err != nil {
 		return zero, FailedToParseResponse{Err: err}
