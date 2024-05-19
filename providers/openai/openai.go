@@ -58,7 +58,7 @@ func filterOutEmptyValues(mapIn map[string]string) map[string]string {
 
 func (o OpenAIProvider) ListModels() ([]string, error) {
 
-	url := baseUrl + "models"
+	url := baseUrl + "modelsx"
 
 	res, err := util.HttpClient.R().SetHeaders(filterOutEmptyValues(map[string]string{
 		"Authorization":       "Bearer " + o.cfg.APIKey,
