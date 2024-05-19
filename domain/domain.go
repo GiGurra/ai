@@ -24,10 +24,8 @@ type RespChunk struct {
 }
 
 type Choice struct {
-	Index        int
-	Message      Message
-	InputTokens  int
-	OutputTokens int
+	Index   int
+	Message Message
 }
 
 type Usage struct {

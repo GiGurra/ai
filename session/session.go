@@ -25,12 +25,14 @@ type State struct {
 }
 
 type Header struct {
-	SessionID    string    `json:"session_id"`
-	Name         string    `json:"name"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-	InputTokens  int       `json:"input_tokens"`
-	OutputTokens int       `json:"output_tokens"`
+	SessionID         string    `json:"session_id"`
+	Name              string    `json:"name"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+	InputTokens       int       `json:"input_tokens"`
+	OutputTokens      int       `json:"output_tokens"`
+	InputTokensAccum  int       `json:"input_tokens_accum"`
+	OutputTokensAccum int       `json:"output_tokens_accum"`
 }
 
 func ListSessions() []Header {

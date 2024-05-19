@@ -42,8 +42,6 @@ type Choice struct {
 	Message      Message `json:"message"`
 	LogProbs     any     `json:"logprobs"`
 	FinishReason string  `json:"finish_reason"`
-	InputTokens  int     `json:"input_tokens"`
-	OutputTokens int     `json:"output_tokens"`
 }
 
 type BasicAskUsage struct {
@@ -80,14 +78,13 @@ func (o BasicAskResponse) GetModel() string {
 
 func (o BasicAskResponse) GetChoices() []domain.Choice {
 	return lo.Map(o.Choices, func(item Choice, index int) domain.Choice {
+		slog.Info(fmt.Sprintf("item: %+v", item))
 		return domain.Choice{
 			Index: 0,
 			Message: domain.Message{
 				SourceType: domain.SourceType(item.Message.Role),
 				Content:    item.Message.Content,
 			},
-			InputTokens:  item.InputTokens,
-			OutputTokens: item.OutputTokens,
 		}
 	})
 }
@@ -162,14 +159,6 @@ func openAiResp2Resp(res openai.ChatCompletionResponse) BasicAskResponse {
 }
 
 func openAiStrResp2Resp(res openai.ChatCompletionStreamResponse) BasicAskResponse {
-	inputTokens, outputTokens := func() (int, int) {
-		if res.Usage != nil {
-			return res.Usage.PromptTokens, res.Usage.CompletionTokens
-		} else {
-			return 0, 0
-		}
-	}()
-
 	return BasicAskResponse{
 		ID:      res.ID,
 		Object:  res.Object,
@@ -181,8 +170,6 @@ func openAiStrResp2Resp(res openai.ChatCompletionStreamResponse) BasicAskRespons
 				Message:      Message{Role: item.Delta.Role, Content: item.Delta.Content},
 				LogProbs:     nil,
 				FinishReason: string(item.FinishReason),
-				InputTokens:  inputTokens,
-				OutputTokens: outputTokens,
 			}
 		}),
 		Usage: func() BasicAskUsage {

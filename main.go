@@ -37,7 +37,7 @@ func main() {
 				Run: func(cmd *cobra.Command, args []string) {
 					sessions := session.ListSessions()
 					for _, s := range sessions {
-						fmt.Printf(" - %s (iTokens=%d, oTokens=%d, created %v)\n", s.Name, s.InputTokens, s.OutputTokens, s.CreatedAt.Format("2006-01-02 15:04:05"))
+						fmt.Printf(" - %s (i=%d/%d, o=%d/%d, created %v)\n", s.Name, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
 					}
 				},
 			}.ToCmd(),
@@ -95,6 +95,12 @@ func main() {
 				if res.Err != nil {
 					common.FailAndExit(1, fmt.Sprintf("Failed to receive stream response: %v", res.Err))
 				}
+
+				state.InputTokensAccum += res.Resp.GetUsage().PromptTokens
+				state.OutputTokensAccum += res.Resp.GetUsage().CompletionTokens
+				state.InputTokens = res.Resp.GetUsage().PromptTokens
+				state.OutputTokens = res.Resp.GetUsage().CompletionTokens
+
 				if len(res.Resp.GetChoices()) == 0 {
 					continue
 				}
@@ -102,8 +108,6 @@ func main() {
 				accum += res.Resp.GetChoices()[0].Message.Content
 				fmt.Printf("%s", res.Resp.GetChoices()[0].Message.Content)
 
-				state.InputTokens += res.Resp.GetChoices()[0].InputTokens
-				state.OutputTokens += res.Resp.GetChoices()[0].OutputTokens
 			}
 
 			// Save the session
