@@ -32,23 +32,6 @@ func main() {
 		Long:   `See the README.MD for more information`,
 		Run: func(cmd *cobra.Command, args []string) {
 
-			// Get the parent shell id
-			sessionId := p.Session.Value()
-			slog.Info(fmt.Sprintf("session id: %s", sessionId))
-
-			state := session.LoadSession(sessionId)
-			slog.Info(fmt.Sprintf("state: %+v", state))
-
-			messageHistory := func() []domain.Message {
-				var messages []domain.Message
-				for _, entry := range state.History {
-					if entry.Type == "message" {
-						messages = append(messages, entry.Message)
-					}
-				}
-				return messages
-			}()
-
 			// if verbose is set, set slog to debug
 			if p.Verbose.Value() {
 				slog.SetLogLoggerLevel(slog.LevelDebug)
@@ -72,6 +55,18 @@ func main() {
 				SourceType: domain.User,
 				Content:    question,
 			}
+
+			state := session.LoadSession(p.Session.Value())
+
+			messageHistory := func() []domain.Message {
+				var messages []domain.Message
+				for _, entry := range state.History {
+					if entry.Type == "message" {
+						messages = append(messages, entry.Message)
+					}
+				}
+				return messages
+			}()
 
 			stream := provider.BasicAskStream(domain.Question{
 				Messages: append(messageHistory, newMessage),
