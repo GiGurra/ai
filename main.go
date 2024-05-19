@@ -39,10 +39,9 @@ func main() {
 			cfgFilePath, storedCfg := config.LoadCfgFile()
 			cfg := config.ValidateCfg(cfgFilePath, storedCfg, p)
 
-			// Check and read from stdin if available
-			stat, _ := os.Stdin.Stat()
 			stdInContents := ""
-			if (stat.Mode() & os.ModeCharDevice) == 0 {
+			stat, err := os.Stdin.Stat()
+			if err == nil && stat != nil && (stat.Mode()&os.ModeCharDevice) == 0 {
 				reader := bufio.NewReader(os.Stdin)
 				var sb strings.Builder
 				for {
