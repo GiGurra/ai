@@ -8,7 +8,7 @@ import (
 	"sort"
 )
 
-type OpenAIConfig struct {
+type Config struct {
 	APIKey       string  `yaml:"api_key"`
 	Organization string  `yaml:"organization"`
 	Project      string  `yaml:"project"`
@@ -18,74 +18,74 @@ type OpenAIConfig struct {
 
 const baseUrl = "https://api.openai.com/v1/"
 
-type OpenAIModelListing struct {
-	Object string        `json:"object"` // will be set to "list"
-	Data   []OpenAIModel `json:"data"`
+type ModelListing struct {
+	Object string  `json:"object"` // will be set to "list"
+	Data   []Model `json:"data"`
 }
 
-type OpenAIModel struct {
+type Model struct {
 	ID        string `json:"id"`
 	Object    string `json:"object"` // will be set to "model"
 	CreatedAt int    `json:"created"`
 	OwnedBy   string `json:"owned_by"`
 }
 
-type OpenAIProvider struct {
-	cfg OpenAIConfig
+type Provider struct {
+	cfg Config
 }
 
-type OpenAIMessage struct {
+type Message struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
 }
 
-type OpenAIBasicAskRequest struct {
-	Model       string          `json:"model"`
-	Messages    []OpenAIMessage `json:"messages"`
-	Temperature float64         `json:"temperature"`
+type BasicAskRequest struct {
+	Model       string    `json:"model"`
+	Messages    []Message `json:"messages"`
+	Temperature float64   `json:"temperature"`
 }
 
-type OpenAIChoice struct {
-	Index        int           `json:"index"`
-	Message      OpenAIMessage `json:"message"`
-	LogProbs     any           `json:"logprobs"`
-	FinishReason string        `json:"finish_reason"`
+type Choice struct {
+	Index        int     `json:"index"`
+	Message      Message `json:"message"`
+	LogProbs     any     `json:"logprobs"`
+	FinishReason string  `json:"finish_reason"`
 }
 
-type OpenaiBasicAskUsage struct {
+type BasicAskUsage struct {
 	PromptTokens     int `json:"prompt_tokens"`
 	CompletionTokens int `json:"completion_tokens"`
 	TotalTokens      int `json:"total_tokens"`
 }
 
-type OpenAIBasicAskResponse struct {
-	ID                string              `json:"id"`
-	Object            string              `json:"object"` // will be set to "chat.completion"
-	Created           int                 `json:"created"`
-	Model             string              `json:"model"`
-	Choices           []OpenAIChoice      `json:"choices"`
-	Usage             OpenaiBasicAskUsage `json:"usage"`
-	SystemFingerprint any                 `json:"system_fingerprint"`
+type BasicAskResponse struct {
+	ID                string        `json:"id"`
+	Object            string        `json:"object"` // will be set to "chat.completion"
+	Created           int           `json:"created"`
+	Model             string        `json:"model"`
+	Choices           []Choice      `json:"choices"`
+	Usage             BasicAskUsage `json:"usage"`
+	SystemFingerprint any           `json:"system_fingerprint"`
 }
 
-func (o OpenAIBasicAskResponse) GetID() string {
+func (o BasicAskResponse) GetID() string {
 	return o.ID
 }
 
-func (o OpenAIBasicAskResponse) GetObjectType() string {
+func (o BasicAskResponse) GetObjectType() string {
 	return o.Object
 }
 
-func (o OpenAIBasicAskResponse) GetCreated() int {
+func (o BasicAskResponse) GetCreated() int {
 	return o.Created
 }
 
-func (o OpenAIBasicAskResponse) GetModel() string {
+func (o BasicAskResponse) GetModel() string {
 	return o.Model
 }
 
-func (o OpenAIBasicAskResponse) GetChoices() []domain.Choice {
-	return lo.Map(o.Choices, func(item OpenAIChoice, index int) domain.Choice {
+func (o BasicAskResponse) GetChoices() []domain.Choice {
+	return lo.Map(o.Choices, func(item Choice, index int) domain.Choice {
 		return domain.Choice{
 			Index: 0,
 			Message: domain.Message{
@@ -96,7 +96,7 @@ func (o OpenAIBasicAskResponse) GetChoices() []domain.Choice {
 	})
 }
 
-func (o OpenAIBasicAskResponse) GetUsage() domain.Usage {
+func (o BasicAskResponse) GetUsage() domain.Usage {
 	return domain.Usage{
 		PromptTokens:     o.Usage.PromptTokens,
 		CompletionTokens: o.Usage.CompletionTokens,
@@ -104,14 +104,14 @@ func (o OpenAIBasicAskResponse) GetUsage() domain.Usage {
 	}
 }
 
-func (o OpenAIBasicAskResponse) GetSystemFingerprint() any {
+func (o BasicAskResponse) GetSystemFingerprint() any {
 	return o.SystemFingerprint
 }
 
 // prove OpenAIBasicAskResponse implements the Response interface
-var _ domain.Response = OpenAIBasicAskResponse{}
+var _ domain.Response = BasicAskResponse{}
 
-func (o OpenAIProvider) authHeaders() map[string]string {
+func (o Provider) authHeaders() map[string]string {
 	return filterOutEmptyValues(map[string]string{
 		"Authorization":       "Bearer " + o.cfg.APIKey,
 		"OpenAI-Organization": o.cfg.Organization,
@@ -119,14 +119,14 @@ func (o OpenAIProvider) authHeaders() map[string]string {
 	})
 }
 
-func (o OpenAIProvider) BasicAsk(question domain.Question) (domain.Response, error) {
+func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 
 	url := baseUrl + "chat/completions"
 
-	requestData := OpenAIBasicAskRequest{
+	requestData := BasicAskRequest{
 		Model: o.cfg.Model,
-		Messages: lo.Map(question.Messages, func(message domain.Message, index int) OpenAIMessage {
-			return OpenAIMessage{
+		Messages: lo.Map(question.Messages, func(message domain.Message, index int) Message {
+			return Message{
 				Role:    string(message.SourceType),
 				Content: message.Content,
 			}
@@ -134,12 +134,12 @@ func (o OpenAIProvider) BasicAsk(question domain.Question) (domain.Response, err
 		Temperature: o.cfg.Temperature,
 	}
 
-	resp, err := util.HttpPostRecvJson[OpenAIBasicAskResponse](url, util.PostParams{
+	resp, err := util.HttpPostRecvJson[BasicAskResponse](url, util.PostParams{
 		Headers: o.authHeaders(),
 		Body:    requestData,
 	})
 	if err != nil {
-		var zero OpenAIBasicAskResponse
+		var zero BasicAskResponse
 		return zero, fmt.Errorf("failed to ask question: %w", err)
 	}
 
@@ -147,10 +147,10 @@ func (o OpenAIProvider) BasicAsk(question domain.Question) (domain.Response, err
 }
 
 // prove that OpenAIProvider implements the Provider interface
-var _ domain.Provider = &OpenAIProvider{}
+var _ domain.Provider = &Provider{}
 
-func NewOpenAIProvider(cfg OpenAIConfig) *OpenAIProvider {
-	return &OpenAIProvider{cfg: cfg}
+func NewOpenAIProvider(cfg Config) *Provider {
+	return &Provider{cfg: cfg}
 }
 
 func filterOutEmptyValues(mapIn map[string]string) map[string]string {
@@ -163,11 +163,11 @@ func filterOutEmptyValues(mapIn map[string]string) map[string]string {
 	return mapOut
 }
 
-func (o OpenAIProvider) ListModels() ([]string, error) {
+func (o Provider) ListModels() ([]string, error) {
 
 	url := baseUrl + "models"
 
-	listing, err := util.HttpGetRecvJson[OpenAIModelListing](url, util.GetParams{
+	listing, err := util.HttpGetRecvJson[ModelListing](url, util.GetParams{
 		Headers: filterOutEmptyValues(map[string]string{
 			"Authorization":       "Bearer " + o.cfg.APIKey,
 			"OpenAI-Organization": o.cfg.Organization,
@@ -183,7 +183,7 @@ func (o OpenAIProvider) ListModels() ([]string, error) {
 		return listing.Data[i].ID < listing.Data[j].ID
 	})
 
-	return lo.Map(listing.Data, func(item OpenAIModel, index int) string {
+	return lo.Map(listing.Data, func(item Model, index int) string {
 		return item.ID
 	}), nil
 }

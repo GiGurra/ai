@@ -23,8 +23,8 @@ type CliParams struct {
 }
 
 type StoredConfig struct {
-	Provider string              `yaml:"provider"`
-	OpenAI   openai.OpenAIConfig `yaml:"openai"`
+	Provider string        `yaml:"provider"`
+	OpenAI   openai.Config `yaml:"openai"`
 }
 
 var defaultConfig = StoredConfig{}
