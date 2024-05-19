@@ -155,7 +155,7 @@ func main() {
 				os.Exit(1)
 			}
 
-			slog.Info(fmt.Sprintf("Response: %s", res))
+			slog.Info(fmt.Sprintf("Response: %v", res))
 		},
 	}.ToApp()
 }

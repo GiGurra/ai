@@ -96,7 +96,7 @@ func HttpPostRecvJson[RespType any](url string, params PostParams) (RespType, er
 		if params.OkStatusFn != nil {
 			return params.OkStatusFn(statusCode)
 		} else {
-			return statusCode%100 == 2
+			return statusCode/100 == 2
 		}
 	}
 
