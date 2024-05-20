@@ -27,10 +27,11 @@ func main() {
 		ParamEnrich: boa.ParamEnricherCombine(
 			boa.ParamEnricherBool,
 			boa.ParamEnricherName,
-			boa.ParamEnricherShort,
+			//boa.ParamEnricherShort, // conflicts with varargs positional args
 		),
 		Params: &p,
 		Long:   `See the README.MD for more information`,
+		Args:   cobra.MinimumNArgs(1),
 		SubCommands: []*cobra.Command{
 			boa.Wrap{
 				Use:   "sessions",
@@ -54,6 +55,14 @@ func main() {
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 
+			question := ""
+			for i, arg := range args {
+				if i > 0 {
+					question += " "
+				}
+				question += arg
+			}
+
 			// if verbose is set, set slog to debug
 			if p.Verbose.Value() {
 				slog.SetLogLoggerLevel(slog.LevelDebug)
@@ -63,8 +72,6 @@ func main() {
 			cfg := config.ValidateCfg(cfgFilePath, storedCfg, p)
 
 			provider := createProvider(cfg)
-
-			question := p.Question.Value()
 
 			// if stdin is not empty, add it at the bottom of the first message
 			stdInContents := readStdin()

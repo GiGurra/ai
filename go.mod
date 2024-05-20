@@ -2,7 +2,7 @@ module github.com/gigurra/ai
 
 go 1.22.3
 
-require github.com/GiGurra/boa v0.0.33
+require github.com/GiGurra/boa v0.0.35
 
 require (
 	github.com/go-resty/resty/v2 v2.13.1 // indirect

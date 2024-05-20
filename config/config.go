@@ -14,13 +14,13 @@ import (
 )
 
 type CliParams struct {
-	Question    boa.Required[string]  `descr:"Question to ask" positional:"true"`
-	Session     boa.Required[string]  `descr:"Session id" positional:"false" env:"CURRENT_AI_SESSION"`
-	Quiet       boa.Required[bool]    `descr:"Quiet mode, requires no user input" short:"q" default:"false"`
-	Verbose     boa.Required[bool]    `descr:"Verbose output" short:"v" default:"false"`
-	Provider    boa.Optional[string]  `descr:"AI provider to use" short:"p"`
-	Model       boa.Optional[string]  `descr:"Model to use" short:"m"`
-	Temperature boa.Optional[float64] `descr:"Temperature to use" short:"t" `
+	Question    boa.Required[[]string] `descr:"Question to ask" positional:"true"` // not used, but needed to produce help text
+	Session     boa.Required[string]   `descr:"Session id" positional:"false" env:"CURRENT_AI_SESSION"`
+	Quiet       boa.Required[bool]     `descr:"Quiet mode, requires no user input" default:"false"`
+	Verbose     boa.Required[bool]     `descr:"Verbose output" default:"false"`
+	Provider    boa.Optional[string]   `descr:"AI provider to use"`
+	Model       boa.Optional[string]   `descr:"Model to use"`
+	Temperature boa.Optional[float64]  `descr:"Temperature to use"`
 }
 
 type CliStatusParams struct {

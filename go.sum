@@ -1,5 +1,9 @@
 github.com/GiGurra/boa v0.0.33 h1:sXNgcCUUboUd6OjPRiWJGzakzsvmQxXrgam4imRJqME=
 github.com/GiGurra/boa v0.0.33/go.mod h1:gLDIPnA094Kys2QdyK20LtNgIxg8FvZbGyC7VludKos=
+github.com/GiGurra/boa v0.0.34 h1:smpe1WWSFQpuITFGj21MT9jiUxz4yxknSqsydkxeANc=
+github.com/GiGurra/boa v0.0.34/go.mod h1:gLDIPnA094Kys2QdyK20LtNgIxg8FvZbGyC7VludKos=
+github.com/GiGurra/boa v0.0.35 h1:phGyCgqJwjP9orQF1jWYdDSBPMCzQuh2eq1fq23YeAo=
+github.com/GiGurra/boa v0.0.35/go.mod h1:gLDIPnA094Kys2QdyK20LtNgIxg8FvZbGyC7VludKos=
 github.com/cpuguy83/go-md2man/v2 v2.0.3/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/go-resty/resty/v2 v2.13.1 h1:x+LHXBI2nMB1vqndymf26quycC4aggYJ7DECYbiz03g=
 github.com/go-resty/resty/v2 v2.13.1/go.mod h1:GznXlLxkq6Nh4sU59rPmUw3VtgpO3aS96ORAI6Q7d+0=
