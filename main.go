@@ -160,6 +160,8 @@ func main() {
 
 			}
 
+			fmt.Printf("\n")
+
 			// Save the session
 			state.AddMessage(domain.Message{
 				SourceType: domain.Assistant,
