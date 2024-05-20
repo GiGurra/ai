@@ -55,13 +55,14 @@ func main() {
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 
-			question := ""
+			sb := strings.Builder{}
 			for i, arg := range args {
 				if i > 0 {
-					question += " "
+					sb.WriteString(" ")
 				}
-				question += arg
+				sb.WriteString(arg)
 			}
+			question := sb.String()
 
 			// if verbose is set, set slog to debug
 			if p.Verbose.Value() {
