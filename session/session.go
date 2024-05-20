@@ -26,7 +26,6 @@ type State struct {
 
 type Header struct {
 	SessionID         string    `json:"session_id"`
-	Name              string    `json:"name"`
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
 	InputTokens       int       `json:"input_tokens"`
@@ -82,7 +81,6 @@ func LoadSession(sessionID string) State {
 			return State{
 				Header: Header{
 					SessionID: sessionID,
-					Name:      sessionID,
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 				},

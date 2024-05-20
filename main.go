@@ -39,7 +39,7 @@ func main() {
 				Run: func(cmd *cobra.Command, args []string) {
 					sessions := session.ListSessions()
 					for _, s := range sessions {
-						fmt.Printf(" - %s (i=%d/%d, o=%d/%d, created %v)\n", s.Name, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
+						fmt.Printf(" - %s (i=%d/%d, o=%d/%d, created %v)\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
 					}
 				},
 			}.ToCmd(),
@@ -49,7 +49,7 @@ func main() {
 				Params: &pStatus,
 				Run: func(cmd *cobra.Command, args []string) {
 					s := session.LoadSession(pStatus.Session.Value())
-					fmt.Printf("(i=%d/%d, o=%d/%d, created %v)", s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
+					fmt.Printf("%s (i=%d/%d, o=%d/%d, created %v)\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
 				},
 			}.ToCmd(),
 		},
