@@ -19,7 +19,7 @@ import (
 func main() {
 
 	p := config.CliParams{}
-	pStatus := config.CliStatusParams{}
+	pSubc := config.CliStatusParams{}
 
 	boa.Wrap{
 		Use:   "ai",
@@ -46,21 +46,41 @@ func main() {
 			boa.Wrap{
 				Use:    "status",
 				Short:  "Prints info about current session",
-				Params: &pStatus,
+				Params: &pSubc,
 				Run: func(cmd *cobra.Command, args []string) {
-					s := session.LoadSession(pStatus.Session.Value())
+					s := session.LoadSession(pSubc.Session.Value())
 					fmt.Printf("%s (i=%d/%d, o=%d/%d, created %v)\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
 				},
 			}.ToCmd(),
 			boa.Wrap{
 				Use:    "config",
 				Short:  "Prints the current configuration",
-				Params: &pStatus,
+				Params: &pSubc,
 				Run: func(cmd *cobra.Command, args []string) {
 					cfgFilePath, storedCfg := config.LoadCfgFile()
 					cfg := config.ValidateCfg(cfgFilePath, storedCfg, p)
 					cfg = cfg.WithoutSecrets()
 					fmt.Printf("--- %s ---\n%s", cfgFilePath, cfg.ToYaml())
+				},
+			}.ToCmd(),
+			boa.Wrap{
+				Use:    "history",
+				Short:  "Prints the conversation history of the current session",
+				Params: &pSubc,
+				Run: func(cmd *cobra.Command, args []string) {
+					state := session.LoadSession(pSubc.Session.Value())
+					oneMsgPrinted := false
+					for _, entry := range state.History {
+						if entry.Type == "message" {
+							if oneMsgPrinted {
+								fmt.Printf("---\n")
+							}
+							fmt.Printf("%s", entry.Message.ToYaml())
+							oneMsgPrinted = true
+						} else {
+							slog.Warn("Unsupported entry type: %s", entry.Type)
+						}
+					}
 				},
 			}.ToCmd(),
 		},

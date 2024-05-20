@@ -1,5 +1,11 @@
 package domain
 
+import (
+	"fmt"
+	"github.com/gigurra/ai/common"
+	"gopkg.in/yaml.v3"
+)
+
 type SourceType string
 
 // Using openai naming here, we can change it later
@@ -10,8 +16,16 @@ const (
 )
 
 type Message struct {
-	SourceType SourceType // system, user or assistant
-	Content    string     // the message content
+	SourceType SourceType `yaml:"source_type"` // system, user or assistant
+	Content    string     `yaml:"content"`     // the message content
+}
+
+func (m Message) ToYaml() string {
+	bytes, err := yaml.Marshal(m)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to marshal message to yaml: %v", err))
+	}
+	return string(bytes)
 }
 
 type Question struct {
