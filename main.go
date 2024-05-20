@@ -14,6 +14,7 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -164,6 +165,8 @@ func main() {
 				SourceType: domain.Assistant,
 				Content:    accum,
 			})
+
+			state.UpdatedAt = time.Now()
 
 			session.StoreSession(state)
 		},
