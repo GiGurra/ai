@@ -52,6 +52,17 @@ func main() {
 					fmt.Printf("%s (i=%d/%d, o=%d/%d, created %v)\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
 				},
 			}.ToCmd(),
+			boa.Wrap{
+				Use:    "config",
+				Short:  "Prints the current configuration",
+				Params: &pStatus,
+				Run: func(cmd *cobra.Command, args []string) {
+					cfgFilePath, storedCfg := config.LoadCfgFile()
+					cfg := config.ValidateCfg(cfgFilePath, storedCfg, p)
+					cfg = cfg.WithoutSecrets()
+					fmt.Printf("--- %s ---\n%s", cfgFilePath, cfg.ToYaml())
+				},
+			}.ToCmd(),
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 

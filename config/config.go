@@ -38,6 +38,19 @@ type Config struct {
 	Verbose bool
 }
 
+func (c Config) WithoutSecrets() Config {
+	c.OpenAI.APIKey = "*****"
+	return c
+}
+
+func (c Config) ToYaml() string {
+	yamlBytes, err := yaml.Marshal(c.StoredConfig)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("failed to marshal config: %v", err))
+	}
+	return string(yamlBytes)
+}
+
 func cfgFilePath() string {
 	appDir := common.AppDir()
 	return appDir + "/config.yaml"
