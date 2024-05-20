@@ -28,6 +28,13 @@ type CliStatusParams struct {
 	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false"`
 }
 
+func (c CliStatusParams) ToCliParams() CliParams {
+	return CliParams{
+		Session: c.Session,
+		Verbose: c.Verbose,
+	}
+}
+
 type StoredConfig struct {
 	Provider string                 `yaml:"provider"`
 	OpenAI   openai_provider.Config `yaml:"openai"`

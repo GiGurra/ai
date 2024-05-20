@@ -58,7 +58,7 @@ func main() {
 				Params: &pSubc,
 				Run: func(cmd *cobra.Command, args []string) {
 					cfgFilePath, storedCfg := config.LoadCfgFile()
-					cfg := config.ValidateCfg(cfgFilePath, storedCfg, p)
+					cfg := config.ValidateCfg(cfgFilePath, storedCfg, pSubc.ToCliParams())
 					cfg = cfg.WithoutSecrets()
 					fmt.Printf("--- %s ---\n%s", cfgFilePath, cfg.ToYaml())
 				},
