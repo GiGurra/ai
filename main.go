@@ -43,7 +43,6 @@ func main() {
 
 			question := strings.Join(args, " ")
 
-			// if verbose is set, set slog to debug
 			if cliParams.Verbose.Value() {
 				slog.SetLogLoggerLevel(slog.LevelDebug)
 			}
