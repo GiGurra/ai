@@ -180,7 +180,7 @@ exist. You can configure the AI provider, model, and other settings in this file
 provider: openai
 openai:
   api_key: "your_openai_api_key"
-  model: "gpt-4"
+  model: "gpt-4o"
   temperature: 0.7
 ```
 
