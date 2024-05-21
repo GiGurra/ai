@@ -35,7 +35,12 @@ type CliSubcParams struct {
 	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 }
 
-type CliSubcParamsReqSession struct {
+type CliSubcParamsPosSession struct {
+	Session boa.Optional[string] `descr:"Session id" positional:"true" name:"session"`
+	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
+}
+
+type CliSubcParamsPosSessionReq struct {
 	Session boa.Required[string] `descr:"Session id" positional:"true"`
 	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 }

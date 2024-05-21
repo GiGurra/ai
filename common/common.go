@@ -8,6 +8,7 @@ import (
 
 func FailAndExit(code int, msg string) {
 	slog.Error(fmt.Sprintf("Exiting with code %d: %s", code, msg))
+	os.Exit(code)
 }
 
 func AppDir() string {

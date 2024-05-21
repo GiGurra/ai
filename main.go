@@ -250,7 +250,7 @@ func historyCmd() *cobra.Command {
 }
 
 func newOrResetCmd(name string) *cobra.Command {
-	p := config.CliSubcParams{}
+	p := config.CliSubcParamsPosSession{}
 	return boa.Wrap{
 		Use:    name,
 		Short:  "Create a new session",
@@ -262,7 +262,7 @@ func newOrResetCmd(name string) *cobra.Command {
 }
 
 func setSessionCmd() *cobra.Command {
-	p := config.CliSubcParamsReqSession{}
+	p := config.CliSubcParamsPosSessionReq{}
 	return boa.Wrap{
 		Use:    "set",
 		Short:  "Set the ai session",
@@ -274,7 +274,7 @@ func setSessionCmd() *cobra.Command {
 }
 
 func deleteSessionCmd() *cobra.Command {
-	p := config.CliSubcParams{}
+	p := config.CliSubcParamsPosSession{}
 	return boa.Wrap{
 		Use:    "delete",
 		Short:  "Delete a session, or the current session if no session id is provided",

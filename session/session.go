@@ -1,6 +1,8 @@
 package session
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +13,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"os"
+	"os/exec"
 	"slices"
 	"strings"
 	"time"
@@ -135,11 +138,28 @@ func StoreSession(state State) {
 }
 
 func BootID() string {
-	bytes, err := os.ReadFile("/proc/sys/kernel/random/boot_id")
-	if err != nil {
-		common.FailAndExit(1, fmt.Sprintf("Failed to read boot_id: %v", err))
+	if util.Must(util.FileExists("/proc/sys/kernel/random/boot_id")) {
+		bytes, err := os.ReadFile("/proc/sys/kernel/random/boot_id")
+		if err != nil {
+			common.FailAndExit(1, fmt.Sprintf("Failed to read boot_id: %v", err))
+		}
+		return strings.TrimSpace(string(bytes))
+	} else {
+		// assume macos, try journalctl: sysctl -n kern.boottime
+		cmd := exec.Command("sysctl", "-n", "kern.boottime")
+		out, err := cmd.Output()
+		if err != nil {
+			common.FailAndExit(1, fmt.Sprintf("Failed to get boottime: %v", err))
+		}
+		// hash the output
+		return hashString(strings.TrimSpace(string(out)))
 	}
-	return strings.TrimSpace(string(bytes))
+}
+
+func hashString(s string) string {
+	hash := sha256.New()
+	hash.Write([]byte(s))
+	return hex.EncodeToString(hash.Sum(nil))
 }
 
 func TerminalId() string {
