@@ -38,6 +38,7 @@ func main() {
 			newOrResetCmd("reset"),
 			setSessionCmd(),
 			deleteSessionCmd(),
+			renameCmd(),
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -270,6 +271,22 @@ func setSessionCmd() *cobra.Command {
 		Params: &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			session.SetSession(p.Session.Value())
+		},
+	}.ToCmd()
+}
+
+func renameCmd() *cobra.Command {
+	p := config.CliSubcRename{}
+	return boa.Wrap{
+		Use:    "rename",
+		Short:  "Rename a session",
+		Params: &p,
+		Run: func(cmd *cobra.Command, args []string) {
+			if p.Arg2.HasValue() {
+				session.RenameSession(p.Arg1.Value(), *p.Arg2.Value())
+			} else {
+				session.RenameSession("", p.Arg1.Value())
+			}
 		},
 	}.ToCmd()
 }

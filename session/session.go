@@ -113,6 +113,7 @@ func LoadSession(sessionID string) State {
 }
 
 func StoreSession(state State) {
+	state.UpdatedAt = time.Now()
 	sessionDir := Dir() + "/" + state.SessionID
 	err := os.MkdirAll(sessionDir, 0755)
 	if err != nil {
@@ -279,6 +280,42 @@ func SetSession(sessionId string) {
 	err = os.WriteFile(mappingFile, []byte(sessionId), 0644)
 	if err != nil {
 		common.FailAndExit(1, fmt.Sprintf("Failed to write session mapping file: %v", err))
+	}
+}
+
+func RenameSession(sessionID string, newSessionID string) {
+	curSessionID := GetSessionID("")
+	if sessionID == "" {
+		sessionID = curSessionID
+	}
+
+	if sessionID == "" {
+		common.FailAndExit(1, "No session to rename")
+	}
+
+	if newSessionID == "" {
+		common.FailAndExit(1, "No new session id provided")
+	}
+
+	if SessionExists(newSessionID) {
+		common.FailAndExit(1, fmt.Sprintf("Session already exists: %s", newSessionID))
+	}
+
+	if !SessionExists(sessionID) {
+		if sessionID == curSessionID {
+			SetSession(newSessionID)
+			return
+		}
+		common.FailAndExit(1, fmt.Sprintf("Session not found: %s", sessionID))
+	}
+
+	s := LoadSession(sessionID)
+	s.SessionID = newSessionID
+
+	StoreSession(s)
+	SetSession(newSessionID)
+	if SessionExists(sessionID) {
+		DeleteSession(sessionID, true)
 	}
 }
 

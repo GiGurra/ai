@@ -51,6 +51,12 @@ type CliSubcParamsPosSessionReq struct {
 	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 }
 
+type CliSubcRename struct {
+	Arg1    boa.Required[string] `descr:"arg1 (new name if 1 arg, from name if 2 args)" positional:"true"`
+	Arg2    boa.Optional[string] `descr:"arg2 (to name if 2 args)" positional:"true"`
+	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
+}
+
 func (c CliSubcParams) ToCliParams() CliParams {
 	return CliParams{
 		Session: c.Session,
