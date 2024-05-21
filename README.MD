@@ -102,6 +102,20 @@ Alternatively just install it with `go install .`, and run it with `ai` instead 
     ai delete <session_id>
     ```
 
+### Using together with [aicat](https://github.com/gigurra/aicat)
+
+You can use this tool together with cat or aicat to analyze a set of file.
+
+- **Analyze a code base**:
+    ```sh
+    aicat . -p "*.go,*.js" | ai what do you think of this code?
+    ```
+  
+- **Find where specific code is in a code base**:
+    ```sh
+    aicat . -p "*.go,*.js" | ai "where is the code that does X?"
+    ```
+
 ## Configuration
 
 The configuration file is located at `~/.config/gigurra/ai/config.yaml`. It is created automatically if it does not
