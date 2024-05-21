@@ -19,13 +19,13 @@ import (
 
 func main() {
 
-	pRoot := config.CliParams{}
+	cliParams := config.CliParams{}
 
 	boa.Wrap{
 		Use:         "ai",
 		Short:       "ai cli tool, you know, for building stuff",
 		ParamEnrich: config.CliParamEnricher,
-		Params:      &pRoot,
+		Params:      &cliParams,
 		Long:        `See the README.MD for more information`,
 		Args:        cobra.MinimumNArgs(1),
 		SubCommands: []*cobra.Command{
@@ -53,12 +53,12 @@ func main() {
 			question := questionBuilder.String()
 
 			// if verbose is set, set slog to debug
-			if pRoot.Verbose.Value() {
+			if cliParams.Verbose.Value() {
 				slog.SetLogLoggerLevel(slog.LevelDebug)
 			}
 
 			cfgFilePath, storedCfg := config.LoadCfgFile()
-			cfg := config.ValidateCfg(cfgFilePath, storedCfg, pRoot)
+			cfg := config.ValidateCfg(cfgFilePath, storedCfg, cliParams)
 
 			provider := createProvider(cfg)
 
@@ -74,7 +74,7 @@ func main() {
 				Content:    question,
 			}
 
-			state := session.LoadSession(session.GetSessionID(pRoot.Session.GetOrElse("")))
+			state := session.LoadSession(session.GetSessionID(cliParams.Session.GetOrElse("")))
 
 			messageHistory := func() []domain.Message {
 				var messages []domain.Message
