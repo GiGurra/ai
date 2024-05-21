@@ -153,11 +153,11 @@ func BootID() string {
 			common.FailAndExit(1, fmt.Sprintf("Failed to get boottime: %v", err))
 		}
 		// hash the output
-		return hashString(strings.TrimSpace(string(out)))
+		return HashString(strings.TrimSpace(string(out)))
 	}
 }
 
-func hashString(s string) string {
+func HashString(s string) string {
 	hash := sha256.New()
 	hash.Write([]byte(s))
 	return hex.EncodeToString(hash.Sum(nil))
