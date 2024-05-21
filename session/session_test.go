@@ -46,3 +46,13 @@ func TestBootID(t *testing.T) {
 		t.Errorf("BootID() = %s; want %s", bootID1, bootID2)
 	}
 }
+
+func TestGetSessionID(t *testing.T) {
+	sessionID1 := GetSessionID("")
+	sessionID2 := GetSessionID("")
+	fmt.Printf("GetSessionID() = %s\n", sessionID1)
+
+	if sessionID1 != sessionID2 {
+		t.Errorf("GetSessionID() = %s; want %s", sessionID1, sessionID2)
+	}
+}
