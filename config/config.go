@@ -6,11 +6,12 @@ import (
 	"github.com/GiGurra/boa/pkg/boa"
 	"github.com/gigurra/ai/common"
 	"github.com/gigurra/ai/providers/openai_provider"
+	"golang.org/x/crypto/ssh/terminal"
 	"gopkg.in/yaml.v3"
 	"io/fs"
-	"log/slog"
 	"os"
 	"strings"
+	"syscall"
 )
 
 type CliParams struct {
@@ -76,35 +77,55 @@ func LoadCfgFile() (string, Config) {
 	_, err := os.Stat(filePath)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			slog.Info("No config file found, will create one")
+			fmt.Printf("No config file found, will create one at: %s\n", filePath)
+			fmt.Printf("Do you wish to enter an OpenAI API key now? (y/n) ")
+
+			var input string
+			_, err := fmt.Scanln(&input)
+			if err != nil {
+				common.FailAndExit(1, fmt.Sprintf("Failed to read input: %v", err))
+			}
+
+			openaiApiKey := ""
+			if strings.HasPrefix(strings.ToLower(input), "y") {
+				fmt.Printf("Please enter your OpenAI API key (first time only): ")
+				bytePassword, err := terminal.ReadPassword(syscall.Stdin)
+				if err != nil {
+					common.FailAndExit(1, fmt.Sprintf("Failed to read input: %v", err))
+				}
+				openaiApiKey = string(bytePassword)
+				fmt.Printf("*****\n")
+			}
+
 			yamlBytes, err := yaml.Marshal(StoredConfig{
 				Provider: "openai",
 				OpenAI: openai_provider.Config{
+					APIKey:      openaiApiKey,
 					Model:       "gpt-4o",
 					Temperature: 0.1,
 				},
 			})
 			if err != nil {
-				panic(fmt.Errorf("failed to marshal default config: %w", err))
+				common.FailAndExit(1, fmt.Sprintf("failed to marshal default config: %v", err))
 			}
 			err = os.WriteFile(filePath, yamlBytes, 0644)
 			if err != nil {
-				panic(fmt.Errorf("failed to write default config file: %w", err))
+				common.FailAndExit(1, fmt.Sprintf("failed to write default config file: %v", err))
 			}
 		} else {
-			panic(fmt.Errorf("failed to stat config file: %w", err))
+			common.FailAndExit(1, fmt.Sprintf("failed to stat config file: %v", err))
 		}
 	}
 
 	cfg := StoredConfig{}
 	yamlBytes, err := os.ReadFile(filePath)
 	if err != nil {
-		panic(fmt.Errorf("failed to read config file: %s: %w", filePath, err))
+		common.FailAndExit(1, fmt.Sprintf("failed to read config file: %s: %v", filePath, err))
 	}
 
 	err = yaml.Unmarshal(yamlBytes, &cfg)
 	if err != nil {
-		panic(fmt.Errorf("failed to unmarshal config file: %s: %w", filePath, err))
+		common.FailAndExit(1, fmt.Sprintf("failed to unmarshal config file: %s: %v", filePath, err))
 	}
 
 	return filePath, Config{

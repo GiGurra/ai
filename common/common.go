@@ -7,19 +7,18 @@ import (
 )
 
 func FailAndExit(code int, msg string) {
-	slog.Error(msg)
-	os.Exit(code)
+	slog.Error(fmt.Sprintf("Exiting with code %d: %s", code, msg))
 }
 
 func AppDir() string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		panic(fmt.Errorf("failed to get home dir: %w", err))
+		FailAndExit(1, fmt.Sprintf("failed to get home dir: %v", err))
 	}
 	dir := homeDir + "/.config/gigurra/ai"
 	err = os.MkdirAll(dir, 0755)
 	if err != nil {
-		panic(fmt.Errorf("failed to create config dir: %w", err))
+		FailAndExit(1, fmt.Sprintf("failed to create config dir: %v", err))
 	}
 
 	return dir
