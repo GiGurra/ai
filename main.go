@@ -51,7 +51,6 @@ func main() {
 
 			provider := providers.CreateProvider(cfg)
 
-			// if stdin is not empty, add it at the bottom of the first message
 			stdInAttachment, err := util.ReadAllStdIn()
 			if err != nil {
 				common.FailAndExit(1, fmt.Sprintf("Failed to read attachment from stdin: %v", err))
