@@ -81,6 +81,8 @@ func main() {
 				Messages: append(messageHistory, newMessage),
 			})
 
+			inputTokens := 0
+			outputTokens := 0
 			accum := strings.Builder{}
 			for {
 				res, ok := <-stream
@@ -91,10 +93,8 @@ func main() {
 					common.FailAndExit(1, fmt.Sprintf("Failed to receive stream response: %v", res.Err))
 				}
 
-				state.InputTokensAccum += res.Resp.GetUsage().PromptTokens
-				state.OutputTokensAccum += res.Resp.GetUsage().CompletionTokens
-				state.InputTokens = res.Resp.GetUsage().PromptTokens
-				state.OutputTokens = res.Resp.GetUsage().CompletionTokens
+				inputTokens += res.Resp.GetUsage().PromptTokens
+				outputTokens += res.Resp.GetUsage().CompletionTokens
 
 				if len(res.Resp.GetChoices()) == 0 {
 					continue
@@ -107,6 +107,10 @@ func main() {
 
 			fmt.Printf("\n")
 
+			state.InputTokensAccum += inputTokens
+			state.InputTokens = inputTokens
+			state.OutputTokensAccum += outputTokens
+			state.OutputTokens = outputTokens
 			state.AddMessage(newMessage)
 			state.AddMessage(domain.Message{
 				SourceType: domain.Assistant,
