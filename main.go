@@ -111,7 +111,7 @@ func main() {
 					continue
 				}
 
-				sb.WriteString(res.Resp.GetChoices()[0].Message.Content)
+				accum.WriteString(res.Resp.GetChoices()[0].Message.Content)
 				fmt.Printf("%s", res.Resp.GetChoices()[0].Message.Content)
 
 			}
