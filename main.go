@@ -253,7 +253,10 @@ func historyCmd() *cobra.Command {
 }
 
 func newOrResetCmd(name string) *cobra.Command {
-	p := config.CliSubcParamsPosSession{}
+	var p struct {
+		Session boa.Optional[string] `descr:"Session id" positional:"true" name:"session"`
+		Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
+	}
 	return boa.Wrap{
 		Use:    name,
 		Short:  "Create a new session",
@@ -265,7 +268,10 @@ func newOrResetCmd(name string) *cobra.Command {
 }
 
 func setSessionCmd() *cobra.Command {
-	p := config.CliSubcParamsPosSessionReq{}
+	var p struct {
+		Session boa.Required[string] `descr:"Session id" positional:"true"`
+		Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
+	}
 	return boa.Wrap{
 		Use:    "set",
 		Short:  "Set the ai session",
@@ -277,7 +283,11 @@ func setSessionCmd() *cobra.Command {
 }
 
 func renameCmd() *cobra.Command {
-	p := config.CliSubcRename{}
+	var p struct {
+		Arg1    boa.Required[string] `descr:"arg1 (new name if 1 arg, from name if 2 args)" positional:"true"`
+		Arg2    boa.Optional[string] `descr:"arg2 (to name if 2 args)" positional:"true"`
+		Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
+	}
 	return boa.Wrap{
 		Use:    "rename",
 		Short:  "Rename a session",
@@ -293,7 +303,11 @@ func renameCmd() *cobra.Command {
 }
 
 func copyCmd() *cobra.Command {
-	p := config.CliSubcRename{}
+	var p struct {
+		Arg1    boa.Required[string] `descr:"arg1 (new name if 1 arg, from name if 2 args)" positional:"true"`
+		Arg2    boa.Optional[string] `descr:"arg2 (to name if 2 args)" positional:"true"`
+		Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
+	}
 	return boa.Wrap{
 		Use:    "copy",
 		Short:  "Copy a session",
@@ -309,7 +323,11 @@ func copyCmd() *cobra.Command {
 }
 
 func deleteSessionCmd() *cobra.Command {
-	p := config.CliSubcDeleteSession{}
+	var p struct {
+		Session boa.Optional[string] `descr:"Session id" positional:"true" name:"session"`
+		Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
+		Yes     boa.Required[bool]   `descr:"Auto confirm" short:"y" default:"false" name:"yes"`
+	}
 	return boa.Wrap{
 		Use:    "delete",
 		Short:  "Delete a session, or the current session if no session id is provided",
