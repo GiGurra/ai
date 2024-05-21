@@ -342,7 +342,6 @@ func QuitSession(sessionOverride string) {
 
 func NewSession(newSessionName string) State {
 
-	QuitSession("")
 	sessionID := func() string {
 		if newSessionName != "" {
 			return newSessionName
@@ -350,6 +349,12 @@ func NewSession(newSessionName string) State {
 			return uuid.NewString()
 		}
 	}()
+
+	if SessionExists(sessionID) {
+		common.FailAndExit(1, fmt.Sprintf("Session already exists: %s", sessionID))
+	}
+
+	QuitSession("")
 
 	SetSession(sessionID)
 
