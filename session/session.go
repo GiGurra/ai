@@ -78,7 +78,7 @@ func ListSessions() []Header {
 	return headers
 }
 
-func SessionExists(sessionID string) bool {
+func StoredSessionExists(sessionID string) bool {
 	sessionDir := Dir() + "/" + sessionID
 	exists, err := util.FileExists(sessionDir)
 	if err != nil {
@@ -224,7 +224,7 @@ func DeleteSession(sessionID string, yes bool) {
 		return
 	}
 
-	if !SessionExists(sessionID) {
+	if !StoredSessionExists(sessionID) {
 		fmt.Printf("Session empty or not found: %s, nothing to delete\n", sessionID)
 		return
 	}
@@ -285,7 +285,7 @@ func SetSession(sessionId string) {
 
 func RenameSession(sessionID string, newSessionID string) {
 	old, _ := CopySession(sessionID, newSessionID)
-	if SessionExists(old) {
+	if StoredSessionExists(old) {
 		DeleteSession(old, true)
 	}
 }
@@ -304,11 +304,11 @@ func CopySession(sessionID string, newSessionID string) (string, string) {
 		common.FailAndExit(1, "No new session id provided")
 	}
 
-	if SessionExists(newSessionID) {
+	if StoredSessionExists(newSessionID) {
 		common.FailAndExit(1, fmt.Sprintf("Session already exists: %s", newSessionID))
 	}
 
-	if !SessionExists(sessionID) {
+	if !StoredSessionExists(sessionID) {
 		if sessionID == curSessionID {
 			SetSession(newSessionID)
 			return sessionID, newSessionID
@@ -356,7 +356,7 @@ func NewSession(newSessionName string) State {
 		}
 	}()
 
-	if SessionExists(sessionID) {
+	if StoredSessionExists(sessionID) {
 		common.FailAndExit(1, fmt.Sprintf("Session already exists: %s", sessionID))
 	}
 
