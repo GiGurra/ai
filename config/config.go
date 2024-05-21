@@ -65,14 +65,14 @@ func (c Config) ToYaml() string {
 	return string(yamlBytes)
 }
 
-func cfgFilePath() string {
+func CfgFilePath() string {
 	appDir := common.AppDir()
 	return appDir + "/config.yaml"
 }
 
 func LoadCfgFile() (string, Config) {
 
-	filePath := cfgFilePath()
+	filePath := CfgFilePath()
 
 	_, err := os.Stat(filePath)
 	if err != nil {

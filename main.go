@@ -149,7 +149,12 @@ func sessionCmd() *cobra.Command {
 		Params: &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			sessionId := session.GetSessionID(p.Session.GetOrElse(""))
-			fmt.Printf("%s\n", sessionId)
+			if p.Verbose.Value() {
+				s := session.LoadSession(sessionId)
+				fmt.Printf("%s (i=%d/%d, o=%d/%d, created %v)\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
+			} else {
+				fmt.Printf("%s\n", sessionId)
+			}
 		},
 	}.ToCmd()
 }
@@ -162,6 +167,7 @@ func statusCmd() *cobra.Command {
 		Params: &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			s := session.LoadSession(session.GetSessionID(p.Session.GetOrElse("")))
+			fmt.Printf("config file: %s\n", config.CfgFilePath())
 			fmt.Printf("storage dir: %s\n", session.Dir())
 			fmt.Printf("lookup dir: %s\n", session.SessionLkupDir())
 			fmt.Printf("current session: %s (i=%d/%d, o=%d/%d, created %v)\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
