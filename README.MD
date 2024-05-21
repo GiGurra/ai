@@ -10,6 +10,10 @@ adding an `ai` command.
 This project is an AI CLI tool designed to interact with various AI providers, so far only OpenAI. It allows users to
 ask questions, manage sessions, and configure settings through a command-line interface.
 
+## WARNING
+
+This tool is likely to significantly increase your OpenAI bill :).  
+
 ## Features
 
 - **Ask Questions**: Interact with AI models by asking questions directly from the command line.
@@ -17,6 +21,10 @@ ask questions, manage sessions, and configure settings through a command-line in
 - **Configuration**: Configure the tool with different AI providers, models, and settings.
 - **History**: View the conversation history of the current session.
 - **Stream Responses**: Stream responses from the AI provider for real-time interaction.
+
+## Requirements
+
+- An OpenAPI API key (or other AI provider API key, if you or I add providers for such)
 
 ## API
 
