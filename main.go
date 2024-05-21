@@ -274,13 +274,13 @@ func setSessionCmd() *cobra.Command {
 }
 
 func deleteSessionCmd() *cobra.Command {
-	p := config.CliSubcParamsPosSession{}
+	p := config.CliSubcDeleteSession{}
 	return boa.Wrap{
 		Use:    "delete",
 		Short:  "Delete a session, or the current session if no session id is provided",
 		Params: &p,
 		Run: func(cmd *cobra.Command, args []string) {
-			session.DeleteSession(p.Session.GetOrElse(""))
+			session.DeleteSession(p.Session.GetOrElse(""), p.Yes.Value())
 		},
 	}.ToCmd()
 }

@@ -40,6 +40,12 @@ type CliSubcParamsPosSession struct {
 	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 }
 
+type CliSubcDeleteSession struct {
+	Session boa.Optional[string] `descr:"Session id" positional:"true" name:"session"`
+	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
+	Yes     boa.Required[bool]   `descr:"Auto confirm" short:"y" default:"false" name:"yes"`
+}
+
 type CliSubcParamsPosSessionReq struct {
 	Session boa.Required[string] `descr:"Session id" positional:"true"`
 	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`

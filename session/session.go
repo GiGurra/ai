@@ -213,7 +213,7 @@ func GetSessionID(sessionOverride string) string {
 	}
 }
 
-func DeleteSession(sessionID string) {
+func DeleteSession(sessionID string, yes bool) {
 	currentSessionID := GetSessionID("")
 	if sessionID == "" {
 		sessionID = currentSessionID
@@ -229,18 +229,20 @@ func DeleteSession(sessionID string) {
 	}
 
 	s := LoadSession(sessionID)
-	fmt.Printf("session: %s (i=%d/%d, o=%d/%d, created %v)\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
-	fmt.Printf("Are you sure you want to delete session: %s? (y/n): ", sessionID)
+	if !yes {
+		fmt.Printf("session: %s (i=%d/%d, o=%d/%d, created %v)\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
+		fmt.Printf("Are you sure you want to delete session: %s? (y/n): ", sessionID)
 
-	var response string
-	_, err := fmt.Scanln(&response)
-	if err != nil {
-		common.FailAndExit(1, fmt.Sprintf("Failed to read response: %v", err))
-	}
+		var response string
+		_, err := fmt.Scanln(&response)
+		if err != nil {
+			common.FailAndExit(1, fmt.Sprintf("Failed to read response: %v", err))
+		}
 
-	if !strings.HasPrefix(strings.ToLower(response), "y") {
-		fmt.Printf("Aborted\n")
-		return
+		if !strings.HasPrefix(strings.ToLower(response), "y") {
+			fmt.Printf("Aborted\n")
+			return
+		}
 	}
 
 	sessionDir := Dir() + "/" + sessionID
