@@ -9,6 +9,7 @@ import (
 	"github.com/gigurra/ai/providers"
 	"github.com/gigurra/ai/session"
 	"github.com/gigurra/ai/util"
+	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"log/slog"
 	"strings"
@@ -62,15 +63,11 @@ func main() {
 
 			state := session.LoadSession(session.GetSessionID(cliParams.Session.GetOrElse("")))
 
-			messageHistory := func() []domain.Message {
-				var messages []domain.Message
-				for _, entry := range state.History {
-					if entry.Type == "message" {
-						messages = append(messages, entry.Message)
-					}
-				}
-				return messages
-			}()
+			messageHistory := lo.Map(lo.Filter(state.History, func(item session.HistoryEntry, index int) bool {
+				return item.Type == "message"
+			}), func(entry session.HistoryEntry, _ int) domain.Message {
+				return entry.Message
+			})
 
 			newMessage := domain.Message{
 				SourceType: domain.User,
