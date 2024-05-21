@@ -14,14 +14,6 @@ ask questions, manage sessions, and configure settings through a command-line in
 
 This tool is likely to significantly increase your OpenAI bill :).  
 
-## Features
-
-- **Ask Questions**: Interact with AI models by asking questions directly from the command line.
-- **Session Management**: Create, delete, rename, and list sessions to keep track of different interactions.
-- **Configuration**: Configure the tool with different AI providers, models, and settings.
-- **History**: View the conversation history of the current session.
-- **Stream Responses**: Stream responses from the AI provider for real-time interaction.
-
 ## Requirements
 
 - An OpenAPI API key (or other AI provider API key, if you or I add providers for such)
