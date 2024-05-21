@@ -49,7 +49,7 @@ func main() {
 				Short:  "Prints info about current session",
 				Params: &pSubc,
 				Run: func(cmd *cobra.Command, args []string) {
-					s := session.LoadSession(pSubc.Session.Value())
+					s := session.LoadSession(session.GetSessionID(pSubc.Session.GetOrElse("")))
 					fmt.Printf("%s (i=%d/%d, o=%d/%d, created %v)\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
 				},
 			}.ToCmd(),
@@ -69,7 +69,7 @@ func main() {
 				Short:  "Prints the conversation history of the current session",
 				Params: &pSubc,
 				Run: func(cmd *cobra.Command, args []string) {
-					state := session.LoadSession(pSubc.Session.Value())
+					state := session.LoadSession(session.GetSessionID(pSubc.Session.GetOrElse("")))
 					oneMsgPrinted := false
 					for _, entry := range state.History {
 						if entry.Type == "message" {
@@ -118,7 +118,7 @@ func main() {
 				Content:    question,
 			}
 
-			state := session.LoadSession(p.Session.Value())
+			state := session.LoadSession(session.GetSessionID(p.Session.GetOrElse("")))
 
 			messageHistory := func() []domain.Message {
 				var messages []domain.Message

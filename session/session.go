@@ -12,6 +12,7 @@ import (
 	"log/slog"
 	"os"
 	"slices"
+	"strings"
 	"time"
 )
 
@@ -129,7 +130,7 @@ func BootID() string {
 	if err != nil {
 		common.FailAndExit(1, fmt.Sprintf("Failed to read boot_id: %v", err))
 	}
-	return string(bytes)
+	return strings.TrimSpace(string(bytes))
 }
 
 func TerminalId() string {
@@ -139,18 +140,18 @@ func TerminalId() string {
 
 	terminalId := os.Getenv("WT_SESSION")
 	if terminalId != "" {
-		return terminalId
+		return strings.TrimSpace(terminalId)
 	}
 
 	terminalId = os.Getenv("ITERM_SESSION_ID")
 	if terminalId != "" {
-		return terminalId
+		return strings.TrimSpace(terminalId)
 	}
 
 	return fmt.Sprintf("%d", os.Getppid())
 }
 
-func TerminalSessionID(sessionOverride string) string {
+func TerminalSessionID() string {
 	return TerminalId() + "." + BootID()
 }
 
@@ -159,7 +160,7 @@ func GetSessionID(sessionOverride string) string {
 		return sessionOverride
 	}
 
-	terminalSessionId := TerminalSessionID(sessionOverride)
+	terminalSessionId := TerminalSessionID()
 	lkupDir := SessionLkupDir()
 	mappingFile := lkupDir + "/" + terminalSessionId
 	exists, err := util.FileExists(mappingFile)
@@ -182,7 +183,7 @@ func GetSessionID(sessionOverride string) string {
 
 func SetSession(sessionId string) {
 	lkupDir := SessionLkupDir()
-	terminalSessionId := TerminalSessionID("")
+	terminalSessionId := TerminalSessionID()
 	mappingFile := lkupDir + "/" + terminalSessionId
 
 	alreadyExists, err := util.FileExists(mappingFile)
@@ -208,7 +209,7 @@ func QuitSession(sessionOverride string) {
 	}
 
 	lkupDir := SessionLkupDir()
-	terminalSessionId := TerminalSessionID("")
+	terminalSessionId := TerminalSessionID()
 	mappingFile := lkupDir + "/" + terminalSessionId
 	exists, err := util.FileExists(mappingFile)
 	if err != nil {
