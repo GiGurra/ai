@@ -14,13 +14,14 @@ import (
 )
 
 type CliParams struct {
-	Question    boa.Required[[]string] `descr:"Question to ask" positional:"true"` // not used, but needed to produce help text
-	Quiet       boa.Required[bool]     `descr:"Quiet mode, requires no user input" default:"false"`
-	Verbose     boa.Required[bool]     `descr:"Verbose output" default:"false"`
-	Session     boa.Optional[string]   `descr:"Session id (deprecated)" positional:"false" env:"CURRENT_AI_SESSION"`
-	Provider    boa.Optional[string]   `descr:"AI provider to use"`
-	Model       boa.Optional[string]   `descr:"Model to use"`
-	Temperature boa.Optional[float64]  `descr:"Temperature to use"`
+	Question       boa.Required[[]string] `descr:"Question to ask" positional:"true"` // not used, but needed to produce help text
+	Quiet          boa.Required[bool]     `descr:"Quiet mode, requires no user input" default:"false"`
+	Verbose        boa.Required[bool]     `descr:"Verbose output" default:"false"`
+	Session        boa.Optional[string]   `descr:"Session id (deprecated)" positional:"false" env:"CURRENT_AI_SESSION"`
+	Provider       boa.Optional[string]   `descr:"AI provider to use"`
+	Model          boa.Optional[string]   `descr:"Model to use"`
+	Temperature    boa.Optional[float64]  `descr:"Temperature to use"`
+	ProviderApiKey boa.Optional[string]   `descr:"API key for provider" env:"PROVIDER_API_KEY"`
 }
 
 type CliStatusParams struct {
@@ -134,6 +135,9 @@ func ValidateCfg(
 		}
 		if p.Model.HasValue() {
 			cfg.OpenAI.Model = *p.Model.Value()
+		}
+		if p.ProviderApiKey.HasValue() {
+			cfg.OpenAI.APIKey = *p.ProviderApiKey.Value()
 		}
 		if cfg.OpenAI.APIKey == "" {
 			common.FailAndExit(1, "No openai api key found in config file: "+configFilePath)
