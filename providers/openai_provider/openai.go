@@ -103,14 +103,6 @@ func (o BasicAskResponse) GetSystemFingerprint() any {
 // prove OpenAIBasicAskResponse implements the Response interface
 var _ domain.Response = BasicAskResponse{}
 
-func (o Provider) authHeaders() map[string]string {
-	return filterOutEmptyValues(map[string]string{
-		"Authorization":       "Bearer " + o.cfg.APIKey,
-		"OpenAI-Organization": o.cfg.Organization,
-		"OpenAI-Project":      o.cfg.Project,
-	})
-}
-
 func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 
 	res, err := o.client.CreateChatCompletion(
@@ -278,16 +270,6 @@ func NewOpenAIProvider(cfg Config, verbose bool) *Provider {
 	}
 
 	return provider
-}
-
-func filterOutEmptyValues(mapIn map[string]string) map[string]string {
-	mapOut := make(map[string]string)
-	for k, v := range mapIn {
-		if v != "" {
-			mapOut[k] = v
-		}
-	}
-	return mapOut
 }
 
 func (o Provider) ListModels() ([]string, error) {
