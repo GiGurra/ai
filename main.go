@@ -12,7 +12,6 @@ import (
 	"github.com/spf13/cobra"
 	"log/slog"
 	"strings"
-	"time"
 )
 
 func main() {
@@ -114,8 +113,6 @@ func main() {
 				SourceType: domain.Assistant,
 				Content:    accum.String(),
 			})
-
-			state.UpdatedAt = time.Now()
 
 			session.StoreSession(state)
 		},
