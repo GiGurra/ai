@@ -189,9 +189,7 @@ func GetSessionID(sessionOverride string) string {
 		}
 		return string(sessionID)
 	} else {
-		newUuid := uuid.NewString()
-		SetSession(newUuid)
-		return newUuid
+		return NewSession("").SessionID
 	}
 }
 
@@ -283,13 +281,19 @@ func QuitSession(sessionOverride string) {
 	}
 }
 
-func NewSession(sessionOverride string) State {
-	if sessionOverride != "" {
-		common.FailAndExit(1, "Cannot create new session with external session override")
-	}
+func NewSession(newSessionName string) State {
 
-	QuitSession(sessionOverride)
-	sessionID := GetSessionID(sessionOverride)
+	QuitSession("")
+	sessionID := func() string {
+		if newSessionName != "" {
+			return newSessionName
+		} else {
+			return uuid.NewString()
+		}
+	}()
+
+	SetSession(sessionID)
+
 	return State{
 		Header: Header{
 			SessionID: sessionID,

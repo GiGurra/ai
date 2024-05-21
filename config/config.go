@@ -14,6 +14,11 @@ import (
 	"syscall"
 )
 
+var CliParamEnricher = boa.ParamEnricherCombine(
+	boa.ParamEnricherBool,
+	boa.ParamEnricherName,
+)
+
 type CliParams struct {
 	Question       boa.Required[[]string] `descr:"Question to ask" positional:"true"` // not used, but needed to produce help text
 	Quiet          boa.Required[bool]     `descr:"Quiet mode, requires no user input" default:"false" name:"quiet"`
@@ -25,22 +30,17 @@ type CliParams struct {
 	ProviderApiKey boa.Optional[string]   `descr:"API key for provider" env:"PROVIDER_API_KEY"`
 }
 
-type CliStatusParams struct {
-	Session boa.Optional[string] `descr:"Session id (deprecated)" positional:"false" env:"CURRENT_AI_SESSION" name:"session"`
+type CliSubcParams struct {
+	Session boa.Optional[string] `descr:"Session id" positional:"false" env:"CURRENT_AI_SESSION" name:"session"`
 	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 }
 
-type CliSetSession struct {
+type CliSubcParamsReqSession struct {
 	Session boa.Required[string] `descr:"Session id" positional:"true"`
-	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false"`
+	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 }
 
-type CliDeleteSession struct {
-	Session boa.Optional[string] `descr:"Session id" pos:"true"`
-	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false"`
-}
-
-func (c CliStatusParams) ToCliParams() CliParams {
+func (c CliSubcParams) ToCliParams() CliParams {
 	return CliParams{
 		Session: c.Session,
 		Verbose: c.Verbose,
