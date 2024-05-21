@@ -1,5 +1,7 @@
 # AI CLI Tool
 
+A minimal cli client making each terminal session a persistent conversation with an AI model.
+
 ## Overview
 
 This application upgrades every terminal session to a conversation with an AI model. It is a command-line interface,
