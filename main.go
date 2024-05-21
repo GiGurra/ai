@@ -82,8 +82,8 @@ func main() {
 			outputTokens := 0
 			accum := strings.Builder{}
 			for {
-				res, ok := <-stream
-				if !ok {
+				res, hasMore := <-stream
+				if !hasMore {
 					break // stream done
 				}
 				if res.Err != nil {
