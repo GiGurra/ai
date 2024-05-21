@@ -284,6 +284,13 @@ func SetSession(sessionId string) {
 }
 
 func RenameSession(sessionID string, newSessionID string) {
+	CopySession(sessionID, newSessionID)
+	if SessionExists(sessionID) {
+		DeleteSession(sessionID, true)
+	}
+}
+
+func CopySession(sessionID string, newSessionID string) {
 	curSessionID := GetSessionID("")
 	if sessionID == "" {
 		sessionID = curSessionID
@@ -314,9 +321,6 @@ func RenameSession(sessionID string, newSessionID string) {
 
 	StoreSession(s)
 	SetSession(newSessionID)
-	if SessionExists(sessionID) {
-		DeleteSession(sessionID, true)
-	}
 }
 
 func QuitSession(sessionOverride string) {

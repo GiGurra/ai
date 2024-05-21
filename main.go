@@ -39,6 +39,7 @@ func main() {
 			setSessionCmd(),
 			deleteSessionCmd(),
 			renameCmd(),
+			copyCmd(),
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -286,6 +287,22 @@ func renameCmd() *cobra.Command {
 				session.RenameSession(p.Arg1.Value(), *p.Arg2.Value())
 			} else {
 				session.RenameSession("", p.Arg1.Value())
+			}
+		},
+	}.ToCmd()
+}
+
+func copyCmd() *cobra.Command {
+	p := config.CliSubcRename{}
+	return boa.Wrap{
+		Use:    "copy",
+		Short:  "Copy a session",
+		Params: &p,
+		Run: func(cmd *cobra.Command, args []string) {
+			if p.Arg2.HasValue() {
+				session.CopySession(p.Arg1.Value(), *p.Arg2.Value())
+			} else {
+				session.CopySession("", p.Arg1.Value())
 			}
 		},
 	}.ToCmd()
