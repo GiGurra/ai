@@ -1,18 +1,16 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/GiGurra/boa/pkg/boa"
 	"github.com/gigurra/ai/common"
 	"github.com/gigurra/ai/config"
 	"github.com/gigurra/ai/domain"
-	"github.com/gigurra/ai/providers/openai_provider"
+	"github.com/gigurra/ai/providers"
 	"github.com/gigurra/ai/session"
+	"github.com/gigurra/ai/util"
 	"github.com/spf13/cobra"
-	"io"
 	"log/slog"
-	"os"
 	"strings"
 	"time"
 )
@@ -60,10 +58,13 @@ func main() {
 			cfgFilePath, storedCfg := config.LoadCfgFile()
 			cfg := config.ValidateCfg(cfgFilePath, storedCfg, cliParams)
 
-			provider := createProvider(cfg)
+			provider := providers.CreateProvider(cfg)
 
 			// if stdin is not empty, add it at the bottom of the first message
-			stdInAttachment := readAttachmentFromStdIn()
+			stdInAttachment, err := util.ReadAllStdIn()
+			if err != nil {
+				common.FailAndExit(1, fmt.Sprintf("Failed to read attachment from stdin: %v", err))
+			}
 			if stdInAttachment != "" {
 				footer := fmt.Sprintf("\n Attached additional info/data: \n %s", stdInAttachment)
 				question = fmt.Sprintf("%s\n%s", question, footer)
@@ -129,37 +130,6 @@ func main() {
 			session.StoreSession(state)
 		},
 	}.ToApp()
-}
-
-func readAttachmentFromStdIn() string {
-	stdInContents := ""
-	stat, err := os.Stdin.Stat()
-	if err == nil && stat != nil && (stat.Mode()&os.ModeCharDevice) == 0 {
-		reader := bufio.NewReader(os.Stdin)
-		var sb strings.Builder
-		for {
-			input, err := reader.ReadString('\n')
-			if err != nil && err != io.EOF {
-				common.FailAndExit(1, fmt.Sprintf("Failed to read from stdin: %v", err))
-			}
-			sb.WriteString(input)
-			if err == io.EOF {
-				break
-			}
-		}
-		stdInContents = strings.TrimSpace(sb.String())
-	}
-	return stdInContents
-}
-
-func createProvider(cfg config.Config) domain.Provider {
-	switch cfg.Provider {
-	case "openai":
-		return openai_provider.NewOpenAIProvider(cfg.OpenAI, cfg.Verbose)
-	default:
-		common.FailAndExit(1, fmt.Sprintf("Unsupported provider: %s", cfg.Provider))
-		return nil // needed to compile :S
-	}
 }
 
 func sessionsCmd() *cobra.Command {
