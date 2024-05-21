@@ -21,6 +21,7 @@ func main() {
 
 	p := config.CliParams{}
 	pSubc := config.CliStatusParams{}
+	pSetSession := config.CliSetSession{}
 
 	boa.Wrap{
 		Use:   "ai",
@@ -82,6 +83,30 @@ func main() {
 							slog.Warn("Unsupported entry type: %s", entry.Type)
 						}
 					}
+				},
+			}.ToCmd(),
+			boa.Wrap{
+				Use:    "new",
+				Short:  "Create a new session",
+				Params: &pSubc,
+				Run: func(cmd *cobra.Command, args []string) {
+					session.NewSession("")
+				},
+			}.ToCmd(),
+			boa.Wrap{
+				Use:    "reset",
+				Short:  "Create a new session",
+				Params: &pSubc,
+				Run: func(cmd *cobra.Command, args []string) {
+					session.NewSession("")
+				},
+			}.ToCmd(),
+			boa.Wrap{
+				Use:    "set",
+				Short:  "Set the ai session",
+				Params: &pSetSession,
+				Run: func(cmd *cobra.Command, args []string) {
+					session.SetSession(pSetSession.Session.Value())
 				},
 			}.ToCmd(),
 		},

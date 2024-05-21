@@ -28,6 +28,11 @@ type CliStatusParams struct {
 	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false"`
 }
 
+type CliSetSession struct {
+	Session boa.Required[string] `descr:"Session id" positional:"true"`
+	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false"`
+}
+
 func (c CliStatusParams) ToCliParams() CliParams {
 	return CliParams{
 		Session: c.Session,
