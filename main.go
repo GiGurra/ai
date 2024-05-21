@@ -60,11 +60,6 @@ func main() {
 				question = fmt.Sprintf("%s\n%s", question, footer)
 			}
 
-			newMessage := domain.Message{
-				SourceType: domain.User,
-				Content:    question,
-			}
-
 			state := session.LoadSession(session.GetSessionID(cliParams.Session.GetOrElse("")))
 
 			messageHistory := func() []domain.Message {
@@ -76,6 +71,11 @@ func main() {
 				}
 				return messages
 			}()
+
+			newMessage := domain.Message{
+				SourceType: domain.User,
+				Content:    question,
+			}
 
 			stream := provider.BasicAskStream(domain.Question{
 				Messages: append(messageHistory, newMessage),
