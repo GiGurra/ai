@@ -75,6 +75,15 @@ func ListSessions() []Header {
 	return headers
 }
 
+func SessionExists(sessionID string) bool {
+	sessionDir := Dir() + "/" + sessionID
+	exists, err := util.FileExists(sessionDir)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to check session dir: %v", err))
+	}
+	return exists
+}
+
 func LoadSession(sessionID string) State {
 	sessionDir := Dir() + "/" + sessionID
 	_, err := util.ReadFaileAsJson[Header](sessionDir + "/header.json")
@@ -183,6 +192,51 @@ func GetSessionID(sessionOverride string) string {
 		newUuid := uuid.NewString()
 		SetSession(newUuid)
 		return newUuid
+	}
+}
+
+func DeleteSession(sessionID string) {
+	currentSessionID := GetSessionID("")
+	if sessionID == "" {
+		sessionID = currentSessionID
+	}
+	if sessionID == "" {
+		fmt.Printf("No current session or session provided to delete\n")
+		return
+	}
+
+	if !SessionExists(sessionID) {
+		fmt.Printf("Session empty or not found: %s, nothing to delete\n", sessionID)
+		return
+	}
+
+	s := LoadSession(sessionID)
+	fmt.Printf("session: %s (i=%d/%d, o=%d/%d, created %v)\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
+	fmt.Printf("Are you sure you want to delete session: %s? (y/n): ", sessionID)
+
+	var response string
+	_, err := fmt.Scanln(&response)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to read response: %v", err))
+	}
+
+	if !strings.HasPrefix(strings.ToLower(response), "y") {
+		fmt.Printf("Aborted\n")
+		return
+	}
+
+	sessionDir := Dir() + "/" + sessionID
+	if util.Must(util.FileExists(sessionDir)) {
+		err := os.RemoveAll(sessionDir)
+		if err != nil {
+			common.FailAndExit(1, fmt.Sprintf("Failed to delete session dir: %v", err))
+		}
+	} else {
+		fmt.Printf("Session not found: %s, nothing to delete\n", sessionID)
+	}
+
+	if sessionID == currentSessionID {
+		QuitSession("")
 	}
 }
 

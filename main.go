@@ -22,6 +22,7 @@ func main() {
 	p := config.CliParams{}
 	pSubc := config.CliStatusParams{}
 	pSetSession := config.CliSetSession{}
+	pDelSession := config.CliDeleteSession{}
 
 	boa.Wrap{
 		Use:   "ai",
@@ -108,6 +109,14 @@ func main() {
 				Params: &pSetSession,
 				Run: func(cmd *cobra.Command, args []string) {
 					session.SetSession(pSetSession.Session.Value())
+				},
+			}.ToCmd(),
+			boa.Wrap{
+				Use:    "delete",
+				Short:  "Delete a session, or the current session if no session id is provided",
+				Params: &pDelSession,
+				Run: func(cmd *cobra.Command, args []string) {
+					session.DeleteSession(pDelSession.Session.GetOrElse(""))
 				},
 			}.ToCmd(),
 		},
