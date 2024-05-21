@@ -164,6 +164,11 @@ You can use this tool together with cat or aicat to analyze a set of file.
     aicat . -p "*.go,*.js" | ai "where is the code that does X?"
     ```
 
+- **Write a github readme**:
+    ```sh
+    aicat . -p "*.go,*.mod" | ai "please write a concise github readme explaining what this project does"
+    ```
+
 ## Configuration
 
 The configuration file is located at `~/.config/gigurra/ai/config.yaml`. It is created automatically if it does not
