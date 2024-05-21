@@ -104,6 +104,15 @@ c6381494-0b0f-4ae2-a5bc-d42cb52b37f3 (i=32/42, o=9/18, created 2024-05-21 22:23:
 Hej! Hvordan kan jeg hjælpe dig i dag?
 ```
 
+```
+~> ll | ai remove all rows except those starting with g
+Sure, here are the rows that start with the letter "g":
+drwxr-xr-x@  6 johankjolhede  staff   192B 21 Maj 12:38 git
+drwxr-xr-x@  4 johankjolhede  staff   128B 29 Nov 12:28 go
+drwxr-xr-x@ 21 johankjolhede  staff   672B 18 Maj 13:34 google-cloud-sdk
+drwxr-xr-x@ 21 johankjolhede  staff   672B 18 Okt  2023 google-cloud-sdk.bak
+```
+
 ### Basic Commands
 
 - **Ask a Question**:
