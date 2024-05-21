@@ -63,7 +63,7 @@ func main() {
 
 			state := session.LoadSession(session.GetSessionID(cliParams.Session.GetOrElse("")))
 
-			messageHistory := lo.Map(lo.Filter(state.History, func(item session.HistoryEntry, index int) bool {
+			messageHistory := lo.Map(lo.Filter(state.History, func(item session.HistoryEntry, _ int) bool {
 				return item.Type == "message"
 			}), func(entry session.HistoryEntry, _ int) domain.Message {
 				return entry.Message
