@@ -6,6 +6,7 @@ require github.com/GiGurra/boa v0.0.35
 
 require (
 	github.com/go-resty/resty/v2 v2.13.1 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/samber/lo v1.39.0 // indirect
 	github.com/sashabaranov/go-openai v1.24.0 // indirect

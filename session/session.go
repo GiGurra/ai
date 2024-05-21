@@ -7,6 +7,7 @@ import (
 	"github.com/gigurra/ai/common"
 	"github.com/gigurra/ai/domain"
 	"github.com/gigurra/ai/util"
+	"github.com/google/uuid"
 	"io/fs"
 	"log/slog"
 	"os"
@@ -121,6 +122,132 @@ func StoreSession(state State) {
 	if err != nil {
 		common.FailAndExit(1, fmt.Sprintf("Failed to write session state: %v", err))
 	}
+}
+
+func BootID() string {
+	bytes, err := os.ReadFile("/proc/sys/kernel/random/boot_id")
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to read boot_id: %v", err))
+	}
+	return string(bytes)
+}
+
+func TerminalId() string {
+	// First look for WT_SESSION
+	// If that isn't found, look for ITERM_SESSION_ID
+	// If that isn't found, use parent process PID
+
+	terminalId := os.Getenv("WT_SESSION")
+	if terminalId != "" {
+		return terminalId
+	}
+
+	terminalId = os.Getenv("ITERM_SESSION_ID")
+	if terminalId != "" {
+		return terminalId
+	}
+
+	return fmt.Sprintf("%d", os.Getppid())
+}
+
+func TerminalSessionID(sessionOverride string) string {
+	return TerminalId() + "." + BootID()
+}
+
+func GetSessionID(sessionOverride string) string {
+	if sessionOverride != "" {
+		return sessionOverride
+	}
+
+	terminalSessionId := TerminalSessionID(sessionOverride)
+	lkupDir := SessionLkupDir()
+	mappingFile := lkupDir + "/" + terminalSessionId
+	exists, err := util.FileExists(mappingFile)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to check session mapping file: %v", err))
+	}
+
+	if exists {
+		sessionID, err := os.ReadFile(mappingFile)
+		if err != nil {
+			common.FailAndExit(1, fmt.Sprintf("Failed to read session mapping file: %v", err))
+		}
+		return string(sessionID)
+	} else {
+		newUuid := uuid.NewString()
+		SetSession(newUuid)
+		return newUuid
+	}
+}
+
+func SetSession(sessionId string) {
+	lkupDir := SessionLkupDir()
+	terminalSessionId := TerminalSessionID("")
+	mappingFile := lkupDir + "/" + terminalSessionId
+
+	alreadyExists, err := util.FileExists(mappingFile)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to check session mapping file: %v", err))
+	}
+	if alreadyExists {
+		err = os.Remove(mappingFile)
+		if err != nil {
+			common.FailAndExit(1, fmt.Sprintf("Failed to remove existing session mapping file: %v", err))
+		}
+	}
+
+	err = os.WriteFile(mappingFile, []byte(sessionId), 0644)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to write session mapping file: %v", err))
+	}
+}
+
+func QuitSession(sessionOverride string) {
+	if sessionOverride != "" {
+		common.FailAndExit(1, "Cannot quit session with external session override")
+	}
+
+	lkupDir := SessionLkupDir()
+	terminalSessionId := TerminalSessionID("")
+	mappingFile := lkupDir + "/" + terminalSessionId
+	exists, err := util.FileExists(mappingFile)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to check session mapping file: %v", err))
+	}
+
+	if exists {
+		err = os.Remove(mappingFile)
+		if err != nil {
+			common.FailAndExit(1, fmt.Sprintf("Failed to remove session mapping file: %v", err))
+		}
+	}
+}
+
+func NewSession(sessionOverride string) State {
+	if sessionOverride != "" {
+		common.FailAndExit(1, "Cannot create new session with external session override")
+	}
+
+	QuitSession(sessionOverride)
+	sessionID := GetSessionID(sessionOverride)
+	return State{
+		Header: Header{
+			SessionID: sessionID,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
+	}
+}
+
+func SessionLkupDir() string {
+	tmpDir := os.TempDir()
+	bootId := BootID()
+	tmpDir = tmpDir + "/gigurra/ai-session-lkup/" + bootId
+	err := os.MkdirAll(tmpDir, 0755)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to create session lookup dir: %v", err))
+	}
+	return tmpDir
 }
 
 func Dir() string {
