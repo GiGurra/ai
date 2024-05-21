@@ -47,7 +47,6 @@ Available Commands:
   status      Prints info about current session
 
 Flags:
-      --quiet                     Quiet mode, requires no user input (default false)
       --verbose                   Verbose output (default false)
       --session string            Session id (deprecated) (env: CURRENT_AI_SESSION)
       --provider string           AI provider to use (env: AI_PROVIDER)
