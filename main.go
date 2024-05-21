@@ -21,6 +21,7 @@ func main() {
 
 	p := config.CliParams{}
 	pSubc := config.CliStatusParams{}
+	pListSession := config.CliStatusParams{}
 	pSetSession := config.CliSetSession{}
 	pDelSession := config.CliDeleteSession{}
 
@@ -37,13 +38,26 @@ func main() {
 		Args:   cobra.MinimumNArgs(1),
 		SubCommands: []*cobra.Command{
 			boa.Wrap{
-				Use:   "sessions",
-				Short: "List all stored sessions",
+				Use:    "sessions",
+				Short:  "List all stored sessions",
+				Params: &pListSession,
+				ParamEnrich: boa.ParamEnricherCombine(
+					boa.ParamEnricherBool,
+					boa.ParamEnricherName,
+					//boa.ParamEnricherShort, // conflicts with varargs positional args
+				),
 				Run: func(cmd *cobra.Command, args []string) {
 					sessions := session.ListSessions()
-					for _, s := range sessions {
-						fmt.Printf(" - %s (i=%d/%d, o=%d/%d, created %v)\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
+					if pListSession.Verbose.Value() {
+						for _, s := range sessions {
+							fmt.Printf(" - %s (i=%d/%d, o=%d/%d, created %v)\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
+						}
+					} else {
+						for _, s := range sessions {
+							fmt.Printf("%s\n", s.SessionID)
+						}
 					}
+
 				},
 			}.ToCmd(),
 			boa.Wrap{

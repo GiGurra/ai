@@ -16,18 +16,18 @@ import (
 
 type CliParams struct {
 	Question       boa.Required[[]string] `descr:"Question to ask" positional:"true"` // not used, but needed to produce help text
-	Quiet          boa.Required[bool]     `descr:"Quiet mode, requires no user input" default:"false"`
-	Verbose        boa.Required[bool]     `descr:"Verbose output" default:"false"`
-	Session        boa.Optional[string]   `descr:"Session id (deprecated)" positional:"false" env:"CURRENT_AI_SESSION"`
-	Provider       boa.Optional[string]   `descr:"AI provider to use"`
-	Model          boa.Optional[string]   `descr:"Model to use"`
-	Temperature    boa.Optional[float64]  `descr:"Temperature to use"`
+	Quiet          boa.Required[bool]     `descr:"Quiet mode, requires no user input" default:"false" name:"quiet"`
+	Verbose        boa.Required[bool]     `descr:"Verbose output" default:"false" name:"verbose"`
+	Session        boa.Optional[string]   `descr:"Session id (deprecated)" positional:"false" env:"CURRENT_AI_SESSION" name:"session"`
+	Provider       boa.Optional[string]   `descr:"AI provider to use" name:"provider" env:"AI_PROVIDER"`
+	Model          boa.Optional[string]   `descr:"Model to use" name:"model"`
+	Temperature    boa.Optional[float64]  `descr:"Temperature to use" name:"temperature"`
 	ProviderApiKey boa.Optional[string]   `descr:"API key for provider" env:"PROVIDER_API_KEY"`
 }
 
 type CliStatusParams struct {
-	Session boa.Optional[string] `descr:"Session id (deprecated)" positional:"false" env:"CURRENT_AI_SESSION"`
-	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false"`
+	Session boa.Optional[string] `descr:"Session id (deprecated)" positional:"false" env:"CURRENT_AI_SESSION" name:"session"`
+	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 }
 
 type CliSetSession struct {
