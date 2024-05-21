@@ -28,6 +28,21 @@ func TestHashString(t *testing.T) {
 }
 
 func TestTerminalId(t *testing.T) {
-	terminalId := TerminalId()
-	fmt.Printf("TerminalId() = %s\n", terminalId)
+	terminalId1 := TerminalId()
+	terminalId2 := TerminalId()
+	fmt.Printf("TerminalId() = %s\n", terminalId1)
+
+	if terminalId1 != terminalId2 {
+		t.Errorf("TerminalId() = %s; want %s", terminalId1, terminalId2)
+	}
+}
+
+func TestBootID(t *testing.T) {
+	bootID1 := BootID()
+	bootID2 := BootID()
+	fmt.Printf("BootID() = %s\n", bootID1)
+
+	if bootID1 != bootID2 {
+		t.Errorf("BootID() = %s; want %s", bootID1, bootID2)
+	}
 }
