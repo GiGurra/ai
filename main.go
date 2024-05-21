@@ -47,6 +47,15 @@ func main() {
 				},
 			}.ToCmd(),
 			boa.Wrap{
+				Use:    "session",
+				Short:  "Print id of current session",
+				Params: &pSubc,
+				Run: func(cmd *cobra.Command, args []string) {
+					sessionId := session.GetSessionID(pSubc.Session.GetOrElse(""))
+					fmt.Printf("%s\n", sessionId)
+				},
+			}.ToCmd(),
+			boa.Wrap{
 				Use:    "status",
 				Short:  "Prints info about current session",
 				Params: &pSubc,
