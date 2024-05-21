@@ -86,6 +86,26 @@ Alternatively just install it with `go install .`, and run it with `ai` instead 
 
 ## Usage
 
+### TLDR
+
+```
+ ~> ai please say hell^C
+ ~>
+ ~> ai please say hello
+Hello! How can I assist you today?
+ ~> ai session
+4aca9b5b-deb2-4b67-bdc1-6ffb03515faf
+ ~> ai rename my-session
+ ~> ai session
+my-session
+ ~> ai sessions -v
+my-session (i=10/10, o=9/9, created 2024-05-21 22:58:07)
+dae13b8e-5602-448b-98d8-41e76b4b7cdd (i=32/42, o=9/18, created 2024-05-21 22:27:41)
+c6381494-0b0f-4ae2-a5bc-d42cb52b37f3 (i=32/42, o=9/18, created 2024-05-21 22:23:22)
+ ~> ai please translate that to danish
+Hej! Hvordan kan jeg hjælpe dig i dag?
+```
+
 ### Basic Commands
 
 - **Ask a Question**:
