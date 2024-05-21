@@ -26,3 +26,8 @@ func TestHashString(t *testing.T) {
 	fmt.Printf("HashString(%s) = %s\n", src2, hash2)
 	fmt.Printf("HashString(%s) = %s\n", src3, hash3)
 }
+
+func TestTerminalId(t *testing.T) {
+	terminalId := TerminalId()
+	fmt.Printf("TerminalId() = %s\n", terminalId)
+}
