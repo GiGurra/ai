@@ -143,6 +143,11 @@ func TerminalId() string {
 		return strings.TrimSpace(terminalId)
 	}
 
+	terminalId = os.Getenv("TERM_SESSION_ID")
+	if terminalId != "" {
+		return strings.TrimSpace(terminalId)
+	}
+
 	terminalId = os.Getenv("ITERM_SESSION_ID")
 	if terminalId != "" {
 		return strings.TrimSpace(terminalId)
