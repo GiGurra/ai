@@ -83,8 +83,6 @@ func main() {
 				Messages: append(messageHistory, newMessage),
 			})
 
-			state.AddMessage(newMessage)
-
 			accum := strings.Builder{}
 			for {
 				res, ok := <-stream
@@ -111,7 +109,7 @@ func main() {
 
 			fmt.Printf("\n")
 
-			// Save the session
+			state.AddMessage(newMessage)
 			state.AddMessage(domain.Message{
 				SourceType: domain.Assistant,
 				Content:    accum.String(),
