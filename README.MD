@@ -89,8 +89,6 @@ Alternatively just install it with `go install .`, and run it with `ai` instead 
 ### TLDR
 
 ```
- ~> ai please say hell^C
- ~>
  ~> ai please say hello
 Hello! How can I assist you today?
  ~> ai session
