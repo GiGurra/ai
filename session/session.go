@@ -284,13 +284,13 @@ func SetSession(sessionId string) {
 }
 
 func RenameSession(sessionID string, newSessionID string) {
-	CopySession(sessionID, newSessionID)
-	if SessionExists(sessionID) {
-		DeleteSession(sessionID, true)
+	old, _ := CopySession(sessionID, newSessionID)
+	if SessionExists(old) {
+		DeleteSession(old, true)
 	}
 }
 
-func CopySession(sessionID string, newSessionID string) {
+func CopySession(sessionID string, newSessionID string) (string, string) {
 	curSessionID := GetSessionID("")
 	if sessionID == "" {
 		sessionID = curSessionID
@@ -311,7 +311,7 @@ func CopySession(sessionID string, newSessionID string) {
 	if !SessionExists(sessionID) {
 		if sessionID == curSessionID {
 			SetSession(newSessionID)
-			return
+			return sessionID, newSessionID
 		}
 		common.FailAndExit(1, fmt.Sprintf("Session not found: %s", sessionID))
 	}
@@ -321,6 +321,8 @@ func CopySession(sessionID string, newSessionID string) {
 
 	StoreSession(s)
 	SetSession(newSessionID)
+
+	return sessionID, newSessionID
 }
 
 func QuitSession(sessionOverride string) {
