@@ -92,7 +92,7 @@ func main() {
 
 			state.AddMessage(newMessage)
 
-			accum := ""
+			accum := strings.Builder{}
 			for {
 				res, ok := <-stream
 				if !ok {
@@ -111,7 +111,7 @@ func main() {
 					continue
 				}
 
-				accum += res.Resp.GetChoices()[0].Message.Content
+				sb.WriteString(res.Resp.GetChoices()[0].Message.Content)
 				fmt.Printf("%s", res.Resp.GetChoices()[0].Message.Content)
 
 			}
@@ -121,7 +121,7 @@ func main() {
 			// Save the session
 			state.AddMessage(domain.Message{
 				SourceType: domain.Assistant,
-				Content:    accum,
+				Content:    accum.String(),
 			})
 
 			state.UpdatedAt = time.Now()
