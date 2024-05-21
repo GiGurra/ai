@@ -21,7 +21,6 @@ var CliParamEnricher = boa.ParamEnricherCombine(
 
 type CliParams struct {
 	Question       boa.Required[[]string] `descr:"Question to ask" positional:"true"` // not used, but needed to produce help text
-	Quiet          boa.Required[bool]     `descr:"Quiet mode, requires no user input" default:"false" name:"quiet"`
 	Verbose        boa.Required[bool]     `descr:"Verbose output" default:"false" name:"verbose"`
 	Session        boa.Optional[string]   `descr:"Session id (deprecated)" positional:"false" env:"CURRENT_AI_SESSION" name:"session"`
 	Provider       boa.Optional[string]   `descr:"AI provider to use" name:"provider" env:"AI_PROVIDER"`
