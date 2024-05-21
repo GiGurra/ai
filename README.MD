@@ -18,7 +18,54 @@ ask questions, manage sessions, and configure settings through a command-line in
 - **History**: View the conversation history of the current session.
 - **Stream Responses**: Stream responses from the AI provider for real-time interaction.
 
+## API
+
+```
+>ai --help
+```
+
+```
+See the README.MD for more information
+
+Usage:
+  ai <question> [flags]
+  ai [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  config      Prints the current configuration
+  copy        Copy a session
+  delete      Delete a session, or the current session if no session id is provided
+  help        Help about any command
+  history     Prints the conversation history of the current session
+  new         Create a new session
+  rename      Rename a session
+  reset       Create a new session
+  session     Print id of current session
+  sessions    List all stored sessions
+  set         Set the ai session
+  status      Prints info about current session
+
+Flags:
+      --quiet                     Quiet mode, requires no user input (default false)
+      --verbose                   Verbose output (default false)
+      --session string            Session id (deprecated) (env: CURRENT_AI_SESSION)
+      --provider string           AI provider to use (env: AI_PROVIDER)
+      --model string              Model to use
+      --temperature float         Temperature to use
+      --provider-api-key string   API key for provider (env: PROVIDER_API_KEY)
+  -h, --help                      help for ai
+
+Use "ai [command] --help" for more information about a command.
+```
+
 ## Installation
+
+```
+go install github.com/gigurra/ai@latest
+```
+
+or:
 
 1. Clone the repository:
     ```sh
