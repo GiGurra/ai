@@ -133,9 +133,9 @@ func main() {
 			provider := createProvider(cfg)
 
 			// if stdin is not empty, add it at the bottom of the first message
-			stdInContents := readStdin()
-			if stdInContents != "" {
-				footer := fmt.Sprintf("\n Attached additional info/data: \n %s", stdInContents)
+			stdInAttachment := readAttachmentFromStdIn()
+			if stdInAttachment != "" {
+				footer := fmt.Sprintf("\n Attached additional info/data: \n %s", stdInAttachment)
 				question = fmt.Sprintf("%s\n%s", question, footer)
 			}
 
@@ -201,7 +201,7 @@ func main() {
 	}.ToApp()
 }
 
-func readStdin() string {
+func readAttachmentFromStdIn() string {
 	stdInContents := ""
 	stat, err := os.Stdin.Stat()
 	if err == nil && stat != nil && (stat.Mode()&os.ModeCharDevice) == 0 {
