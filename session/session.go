@@ -138,6 +138,11 @@ func StoreSession(state State) {
 	}
 }
 
+func cliCommandExists(cmd string) bool {
+	_, err := exec.LookPath(cmd)
+	return err == nil
+}
+
 func BootID() string {
 	if util.Must(util.FileExists("/proc/sys/kernel/random/boot_id")) {
 		bytes, err := os.ReadFile("/proc/sys/kernel/random/boot_id")
@@ -145,7 +150,7 @@ func BootID() string {
 			common.FailAndExit(1, fmt.Sprintf("Failed to read boot_id: %v", err))
 		}
 		return strings.TrimSpace(string(bytes))
-	} else {
+	} else if cliCommandExists("sysctl") {
 		// assume macos, try journalctl: sysctl -n kern.boottime
 		cmd := exec.Command("sysctl", "-n", "kern.boottime")
 		out, err := cmd.Output()
@@ -154,6 +159,18 @@ func BootID() string {
 		}
 		// hash the output
 		return HashString(strings.TrimSpace(string(out)))
+	} else if cliCommandExists("systeminfo") {
+		// assume windows, try systeminfo
+		cmd := exec.Command("systeminfo")
+		out, err := cmd.Output()
+		if err != nil {
+			common.FailAndExit(1, fmt.Sprintf("Failed to get systeminfo: %v", err))
+		}
+		// hash the output
+		return HashString(strings.TrimSpace(string(out)))
+	} else {
+		common.FailAndExit(1, "Failed to find boot_id. Could not find /proc/sys/kernel/random/boot_id, sysctl or systeminfo.")
+		return ""
 	}
 }
 
