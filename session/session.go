@@ -159,15 +159,8 @@ func BootID() string {
 		}
 		// hash the output
 		return HashString(strings.TrimSpace(string(out)))
-	} else if cliCommandExists("systeminfo") {
-		// assume windows, try systeminfo
-		cmd := exec.Command("systeminfo")
-		out, err := cmd.Output()
-		if err != nil {
-			common.FailAndExit(1, fmt.Sprintf("Failed to get systeminfo: %v", err))
-		}
-		// hash the output
-		return HashString(strings.TrimSpace(string(out)))
+	} else if util.IsWindows() {
+		return HashString(util.BootTimeWindowsStr())
 	} else {
 		common.FailAndExit(1, "Failed to find boot_id. Could not find /proc/sys/kernel/random/boot_id, sysctl or systeminfo.")
 		return ""
