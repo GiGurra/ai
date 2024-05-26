@@ -11,7 +11,6 @@ import (
 	"io/fs"
 	"os"
 	"strings"
-	"syscall"
 )
 
 var CliParamEnricher = boa.ParamEnricherCombine(
@@ -88,7 +87,7 @@ func LoadCfgFile() (string, Config) {
 			openaiApiKey := ""
 			if strings.HasPrefix(strings.ToLower(input), "y") {
 				fmt.Printf("Please enter your OpenAI API key (first time only): ")
-				bytePassword, err := terminal.ReadPassword(syscall.Stdin)
+				bytePassword, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 				if err != nil {
 					common.FailAndExit(1, fmt.Sprintf("Failed to read input: %v", err))
 				}
