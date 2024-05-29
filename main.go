@@ -244,9 +244,13 @@ func setSessionCmd() *cobra.Command {
 		Session boa.Required[string] `descr:"Session id" positional:"true"`
 		Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 	}
+	availableSessions := session.ListSessions()
 	return boa.Wrap{
-		Use:    "set",
-		Short:  "Set the ai session",
+		Use:   "set",
+		Short: "Set the ai session",
+		ValidArgs: lo.Map(availableSessions, func(s session.Header, _ int) string {
+			return s.SessionID
+		}),
 		Params: &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			session.SetSession(p.Session.Value())
@@ -300,9 +304,14 @@ func deleteSessionCmd() *cobra.Command {
 		Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 		Yes     boa.Required[bool]   `descr:"Auto confirm" short:"y" default:"false" name:"yes"`
 	}
+
+	availableSessions := session.ListSessions()
 	return boa.Wrap{
-		Use:    "delete",
-		Short:  "Delete a session, or the current session if no session id is provided",
+		Use:   "delete",
+		Short: "Delete a session, or the current session if no session id is provided",
+		ValidArgs: lo.Map(availableSessions, func(s session.Header, _ int) string {
+			return s.SessionID
+		}),
 		Params: &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			session.DeleteSession(p.Session.GetOrElse(""), p.Yes.Value())
