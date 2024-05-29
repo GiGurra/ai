@@ -206,7 +206,7 @@ func GetSessionID(sessionOverride string) string {
 	}
 
 	terminalSessionId := TerminalSessionID()
-	lkupDir := SessionLkupDir()
+	lkupDir := LookupDir()
 	mappingFile := lkupDir + "/" + terminalSessionId
 	exists, err := util.FileExists(mappingFile)
 	if err != nil {
@@ -272,7 +272,7 @@ func DeleteSession(sessionID string, yes bool) {
 }
 
 func SetSession(sessionId string) {
-	lkupDir := SessionLkupDir()
+	lkupDir := LookupDir()
 	terminalSessionId := TerminalSessionID()
 	mappingFile := lkupDir + "/" + terminalSessionId
 
@@ -342,7 +342,7 @@ func QuitSession(sessionOverride string) {
 		common.FailAndExit(1, "Cannot quit session with external session override")
 	}
 
-	lkupDir := SessionLkupDir()
+	lkupDir := LookupDir()
 	terminalSessionId := TerminalSessionID()
 	mappingFile := lkupDir + "/" + terminalSessionId
 	exists, err := util.FileExists(mappingFile)
@@ -385,7 +385,7 @@ func NewSession(newSessionName string) State {
 	}
 }
 
-func SessionLkupDir() string {
+func LookupDir() string {
 	tmpDir := os.TempDir()
 	bootId := BootID()
 	tmpDir = tmpDir + "/gigurra/ai-session-lkup/" + bootId
