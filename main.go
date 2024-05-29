@@ -203,9 +203,10 @@ func configCmd() *cobra.Command {
 func historyCmd() *cobra.Command {
 	p := config.CliSubcParams{}
 	return boa.Wrap{
-		Use:    "history",
-		Short:  "Prints the conversation history of the current session",
-		Params: &p,
+		Use:       "history",
+		Short:     "Prints the conversation history of the current session",
+		ValidArgs: availableSessionIDs(),
+		Params:    &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			state := session.LoadSession(session.GetSessionID(p.Session.GetOrElse("")))
 			oneMsgPrinted := false
@@ -244,14 +245,11 @@ func setSessionCmd() *cobra.Command {
 		Session boa.Required[string] `descr:"Session id" positional:"true"`
 		Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 	}
-	availableSessions := session.ListSessions()
 	return boa.Wrap{
-		Use:   "set",
-		Short: "Set the ai session",
-		ValidArgs: lo.Map(availableSessions, func(s session.Header, _ int) string {
-			return s.SessionID
-		}),
-		Params: &p,
+		Use:       "set",
+		Short:     "Set the ai session",
+		ValidArgs: availableSessionIDs(),
+		Params:    &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			session.SetSession(p.Session.Value())
 		},
@@ -305,16 +303,20 @@ func deleteSessionCmd() *cobra.Command {
 		Yes     boa.Required[bool]   `descr:"Auto confirm" short:"y" default:"false" name:"yes"`
 	}
 
-	availableSessions := session.ListSessions()
 	return boa.Wrap{
-		Use:   "delete",
-		Short: "Delete a session, or the current session if no session id is provided",
-		ValidArgs: lo.Map(availableSessions, func(s session.Header, _ int) string {
-			return s.SessionID
-		}),
-		Params: &p,
+		Use:       "delete",
+		Short:     "Delete a session, or the current session if no session id is provided",
+		ValidArgs: availableSessionIDs(),
+		Params:    &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			session.DeleteSession(p.Session.GetOrElse(""), p.Yes.Value())
 		},
 	}.ToCmd()
+}
+
+func availableSessionIDs() []string {
+	availableSessions := session.ListSessions()
+	return lo.Map(availableSessions, func(s session.Header, _ int) string {
+		return s.SessionID
+	})
 }

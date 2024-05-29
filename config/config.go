@@ -29,7 +29,7 @@ type CliParams struct {
 }
 
 type CliSubcParams struct {
-	Session boa.Optional[string] `descr:"Session id" positional:"false" env:"CURRENT_AI_SESSION" name:"session"`
+	Session boa.Optional[string] `descr:"Session id" positional:"true" env:"CURRENT_AI_SESSION" name:"session"`
 	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 }
 
