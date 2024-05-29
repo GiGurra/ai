@@ -330,7 +330,9 @@ func CopySession(sessionID string, newSessionID string) (string, string) {
 	s.SessionID = newSessionID
 
 	StoreSession(s)
-	SetSession(newSessionID)
+	if sessionID == curSessionID {
+		SetSession(newSessionID)
+	}
 
 	return sessionID, newSessionID
 }
