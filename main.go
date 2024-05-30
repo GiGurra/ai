@@ -40,7 +40,7 @@ func main() {
 			deleteSessionCmd(),
 			renameCmd(),
 			copyCmd(),
-			autoAssignNamesCmd(),
+			nameAll(),
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -294,14 +294,14 @@ func copyCmd() *cobra.Command {
 	}.ToCmd()
 }
 
-func autoAssignNamesCmd() *cobra.Command {
+func nameAll() *cobra.Command {
 	var p struct {
 		Verbose boa.Required[bool] `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 		Yes     boa.Required[bool] `descr:"Verbose output" short:"y" default:"false" name:"yes"`
 	}
 	return boa.Wrap{
-		Use:    "auto-assign-names",
-		Short:  "Assign names to all sessions who's IDs are still just UUIDs",
+		Use:    "name-all",
+		Short:  "generate names to replace UUID session IDs",
 		Params: &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			sessions := session.ListSessions()
