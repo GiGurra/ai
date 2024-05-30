@@ -141,7 +141,7 @@ func ValidateCfg(
 		cfg.Provider = *p.Provider.Value()
 	}
 
-	if p.Verbose.Value() {
+	if p.Verbose.HasValue() && p.Verbose.Value() {
 		cfg.Verbose = true
 	}
 

@@ -10,6 +10,7 @@ import (
 	"github.com/gigurra/ai/domain"
 	"github.com/gigurra/ai/util"
 	"github.com/google/uuid"
+	"github.com/samber/lo"
 	"io/fs"
 	"log/slog"
 	"os"
@@ -405,5 +406,13 @@ func (s *State) AddMessage(message domain.Message) {
 	s.History = append(s.History, HistoryEntry{
 		Type:    "message",
 		Message: message,
+	})
+}
+
+func (s *State) MessageHistory() []domain.Message {
+	return lo.Map(lo.Filter(s.History, func(item HistoryEntry, _ int) bool {
+		return item.Type == "message"
+	}), func(entry HistoryEntry, _ int) domain.Message {
+		return entry.Message
 	})
 }
