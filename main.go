@@ -23,7 +23,7 @@ func main() {
 
 	boa.Wrap{
 		Use:         "ai",
-		Short:       "ai cli tool, you know, for building stuff",
+		Short:       "ai/llm conversation tool, every terminal is a conversation",
 		ParamEnrich: config.CliParamEnricher,
 		Params:      &cliParams,
 		Long:        `See the README.MD for more information`,
