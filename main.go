@@ -60,10 +60,18 @@ func main() {
 				common.FailAndExit(1, fmt.Sprintf("Failed to read attachment from stdin: %v", err))
 			}
 			if stdInAttachment != "" {
-				footer := fmt.Sprintf("\n Attached additional info/data: \n %s", stdInAttachment)
-				question = fmt.Sprintf("%s\n%s", question, footer)
+				if question != "" {
+					footer := fmt.Sprintf("\n Attached additional info/data: \n %s", stdInAttachment)
+					question = fmt.Sprintf("%s\n%s", question, footer)
+				} else {
+					question = stdInAttachment
+				}
 			}
 
+			if question == "" {
+				common.FailAndExit(1, "No data provided")
+			}
+			
 			state := session.LoadSession(session.GetSessionID(cliParams.Session.GetOrElse("")))
 			messageHistory := state.MessageHistory()
 
@@ -401,28 +409,36 @@ func prepCmd() *cobra.Command {
 		Params: &p,
 		Args:   cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
-			message := strings.Join(args, " ")
+			question := strings.Join(args, " ")
 
 			stdInAttachment, err := util.ReadAllStdIn()
 			if err != nil {
 				common.FailAndExit(1, fmt.Sprintf("Failed to read attachment from stdin: %v", err))
 			}
 			if stdInAttachment != "" {
-				footer := fmt.Sprintf("\n Attached additional info/data: \n %s", stdInAttachment)
-				message = fmt.Sprintf("%s\n%s", message, footer)
+				if question != "" {
+					footer := fmt.Sprintf("\n Attached additional info/data: \n %s", stdInAttachment)
+					question = fmt.Sprintf("%s\n%s", question, footer)
+				} else {
+					question = stdInAttachment
+				}
+			}
+
+			if question == "" {
+				common.FailAndExit(1, "No data provided")
 			}
 
 			state := session.LoadSession(session.GetSessionID(""))
 			newMessage := domain.Message{
 				SourceType: domain.User,
-				Content:    message,
+				Content:    question,
 			}
 
 			state.AddMessage(newMessage)
 			session.StoreSession(state)
 
 			if p.Verbose.Value() {
-				fmt.Printf("Added message to session %s: %s\n", state.SessionID, message)
+				fmt.Printf("Added message to session %s: %s\n", state.SessionID, question)
 			}
 		},
 	}.ToCmd()
