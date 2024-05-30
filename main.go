@@ -140,7 +140,7 @@ func sessionsCmd() *cobra.Command {
 				for _, s := range sessions {
 					currentSessionSuffix := ""
 					if s.SessionID == currentSession {
-						currentSessionSuffix = " [current]"
+						currentSessionSuffix = " [ *current* ]"
 					}
 					fmt.Printf("%s (i=%d/%d, o=%d/%d, created %v)%s\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"), currentSessionSuffix)
 				}
@@ -148,7 +148,7 @@ func sessionsCmd() *cobra.Command {
 				for _, s := range sessions {
 					currentSessionSuffix := ""
 					if s.SessionID == currentSession {
-						currentSessionSuffix = " [current]"
+						currentSessionSuffix = " [ *current* ]"
 					}
 					fmt.Printf("%s%s\n", s.SessionID, currentSessionSuffix)
 				}
