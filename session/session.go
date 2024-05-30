@@ -18,6 +18,7 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode"
 )
 
 type HistoryEntry struct {
@@ -301,7 +302,24 @@ func RenameSession(sessionID string, newSessionID string) {
 	}
 }
 
+func IsAllowedNameChar(r rune) bool {
+	return unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_' || r == '-' || r == ' ' || r == '.'
+}
+
+func IsValidSessionName(name string) bool {
+	for _, r := range name {
+		if !IsAllowedNameChar(r) {
+			return false
+		}
+	}
+	return true
+}
+
 func CopySession(sessionID string, newSessionID string) (string, string) {
+	if !IsValidSessionName(newSessionID) {
+		common.FailAndExit(1, fmt.Sprintf("Invalid session name: %s", newSessionID))
+	}
+
 	curSessionID := GetSessionID("")
 	if sessionID == "" {
 		sessionID = curSessionID
