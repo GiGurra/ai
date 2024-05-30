@@ -211,7 +211,7 @@ func historyCmd() *cobra.Command {
 	return boa.Wrap{
 		Use:       "history",
 		Short:     "Prints the conversation history of the current session",
-		ValidArgs: availableSessionIDs(),
+		ValidArgs: storedSessionIDs(),
 		Params:    &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			state := session.LoadSession(session.GetSessionID(p.Session.GetOrElse("")))
@@ -254,7 +254,7 @@ func setSessionCmd() *cobra.Command {
 	return boa.Wrap{
 		Use:       "set",
 		Short:     "Set the ai session",
-		ValidArgs: availableSessionIDs(),
+		ValidArgs: storedSessionIDs(),
 		Params:    &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			session.SetSession(p.Session.Value())
@@ -395,7 +395,7 @@ func deleteSessionCmd() *cobra.Command {
 	return boa.Wrap{
 		Use:       "delete",
 		Short:     "Delete a session, or the current session if no session id is provided",
-		ValidArgs: availableSessionIDs(),
+		ValidArgs: storedSessionIDs(),
 		Params:    &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			session.DeleteSession(p.Session.GetOrElse(""), p.Yes.Value())
@@ -447,7 +447,7 @@ func prepCmd() *cobra.Command {
 	}.ToCmd()
 }
 
-func availableSessionIDs() []string {
+func storedSessionIDs() []string {
 	availableSessions := session.ListSessions()
 	return lo.Map(availableSessions, func(s session.Header, _ int) string {
 		return s.SessionID
