@@ -310,12 +310,16 @@ func nameAll() *cobra.Command {
 			cfg := config.ValidateCfg(cfgFilePath, storedCfg, config.CliParams{})
 			provider := providers.CreateProvider(cfg)
 
-			for _, s := range sessions {
+			sessionsToRename := lo.Filter(sessions, func(s session.Header, _ int) bool {
+				return isUUID(s.SessionID)
+			})
 
-				if !isUUID(s.SessionID) {
-					// already has a name
-					continue
-				}
+			if len(sessionsToRename) == 0 {
+				fmt.Printf("No UUID sessions to rename\n")
+				return
+			}
+
+			for _, s := range sessionsToRename {
 
 				fmt.Printf("Processing session %s\n", s.SessionID)
 
