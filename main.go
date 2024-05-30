@@ -15,6 +15,7 @@ import (
 	"log/slog"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 func main() {
@@ -71,7 +72,7 @@ func main() {
 			if question == "" {
 				common.FailAndExit(1, "No data provided")
 			}
-			
+
 			state := session.LoadSession(session.GetSessionID(cliParams.Session.GetOrElse("")))
 			messageHistory := state.MessageHistory()
 
@@ -360,6 +361,9 @@ func nameAll() *cobra.Command {
 				}
 
 				newName := strings.ToLower(resp.GetChoices()[0].Message.Content)
+				newName = string(lo.Filter([]rune(newName), func(r rune, _ int) bool {
+					return isAllowedNameChar(r)
+				}))
 
 				if newName == "" {
 					common.FailAndExit(1, "No name returned from provider")
@@ -464,4 +468,8 @@ func askYesNo(question string) bool {
 func isUUID(s string) bool {
 	_, err := uuid.Parse(s)
 	return err == nil
+}
+
+func isAllowedNameChar(r rune) bool {
+	return unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_' || r == '-'
 }
