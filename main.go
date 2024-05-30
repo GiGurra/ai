@@ -26,7 +26,6 @@ func main() {
 		Short:       "ai/llm conversation tool, every terminal is a conversation",
 		ParamEnrich: config.CliParamEnricher,
 		Params:      &cliParams,
-		Long:        "ai/llm conversation tool, every terminal is a conversation",
 		Args:        cobra.MinimumNArgs(0),
 		SubCommands: []*cobra.Command{
 			sessionsCmd(),
