@@ -378,6 +378,9 @@ func QuitSession(sessionOverride string) {
 }
 
 func NewSession(newSessionName string) State {
+	if !IsValidSessionName(newSessionName) {
+		common.FailAndExit(1, fmt.Sprintf("Invalid session name: %s", newSessionName))
+	}
 
 	sessionID := func() string {
 		if newSessionName != "" {
