@@ -41,7 +41,7 @@ func main() {
 			renameCmd(),
 			copyCmd(),
 			nameAll(),
-			prepCmd(), // Add the new prep command here
+			prepCmd(),
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 
