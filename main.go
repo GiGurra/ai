@@ -27,7 +27,7 @@ func main() {
 		ParamEnrich: config.CliParamEnricher,
 		Params:      &cliParams,
 		Long:        `See the README.MD for more information`,
-		Args:        cobra.MinimumNArgs(1),
+		Args:        cobra.MinimumNArgs(0),
 		SubCommands: []*cobra.Command{
 			sessionsCmd(),
 			sessionCmd(),
@@ -41,6 +41,7 @@ func main() {
 			renameCmd(),
 			copyCmd(),
 			nameAll(),
+			prepCmd(), // Add the new prep command here
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -388,6 +389,42 @@ func deleteSessionCmd() *cobra.Command {
 		Params:    &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			session.DeleteSession(p.Session.GetOrElse(""), p.Yes.Value())
+		},
+	}.ToCmd()
+}
+func prepCmd() *cobra.Command {
+	var p struct {
+		Verbose boa.Required[bool] `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
+	}
+	return boa.Wrap{
+		Use:    "prep",
+		Short:  "Add a user message to the current session without sending a question",
+		Params: &p,
+		Args:   cobra.MinimumNArgs(0),
+		Run: func(cmd *cobra.Command, args []string) {
+			message := strings.Join(args, " ")
+
+			stdInAttachment, err := util.ReadAllStdIn()
+			if err != nil {
+				common.FailAndExit(1, fmt.Sprintf("Failed to read attachment from stdin: %v", err))
+			}
+			if stdInAttachment != "" {
+				footer := fmt.Sprintf("\n Attached additional info/data: \n %s", stdInAttachment)
+				message = fmt.Sprintf("%s\n%s", message, footer)
+			}
+
+			state := session.LoadSession(session.GetSessionID(""))
+			newMessage := domain.Message{
+				SourceType: domain.User,
+				Content:    message,
+			}
+
+			state.AddMessage(newMessage)
+			session.StoreSession(state)
+
+			if p.Verbose.Value() {
+				fmt.Printf("Added message to session %s: %s\n", state.SessionID, message)
+			}
 		},
 	}.ToCmd()
 }
