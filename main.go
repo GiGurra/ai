@@ -363,6 +363,7 @@ func nameAll() *cobra.Command {
 				newName = string(lo.Filter([]rune(newName), func(r rune, _ int) bool {
 					return session.IsAllowedNameChar(r)
 				}))
+				newName = strings.TrimSpace(newName)
 
 				if newName == "" {
 					common.FailAndExit(1, "No name returned from provider")
