@@ -22,11 +22,8 @@ ask questions, manage sessions, and configure settings through a command-line in
 ## API
 
 ```
->ai --help
-```
-
-```
-See the README.MD for more information
+~> ai --help
+ai/llm conversation tool, every terminal is a conversation
 
 Usage:
   ai <question> [flags]
@@ -39,7 +36,9 @@ Available Commands:
   delete      Delete a session, or the current session if no session id is provided
   help        Help about any command
   history     Prints the conversation history of the current session
+  name-all    generate names to replace UUID session IDs
   new         Create a new session
+  prep        Add a user message to the current session without sending a question
   rename      Rename a session
   reset       Create a new session
   session     Print id of current session
