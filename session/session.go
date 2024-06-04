@@ -420,7 +420,12 @@ func LookupDir() string {
 
 func Dir() string {
 	appDir := common.AppDir()
-	return appDir + "/sessions"
+	res := appDir + "/sessions"
+	err := os.MkdirAll(res, 0755)
+	if err != nil {
+		common.FailAndExit(1, fmt.Sprintf("Failed to create session storage dir: %v", err))
+	}
+	return res
 }
 
 func (s *State) AddMessage(message domain.Message) {
