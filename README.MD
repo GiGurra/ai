@@ -1,6 +1,6 @@
 # AI CLI Tool
 
-A minimal cli client making each terminal session a persistent conversation with an AI model.
+A minimal cli client turning each terminal session into a persistent conversation with an AI model.
 
 ## Overview
 
