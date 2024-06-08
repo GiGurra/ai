@@ -7,8 +7,8 @@ A minimal cli client turning each terminal session into a persistent conversatio
 This application upgrades every terminal session to a conversation with an AI model. It is a command-line interface,
 adding an `ai` command.
 
-This project is an AI CLI tool designed to interact with various AI providers, so far only OpenAI. It allows users to
-ask questions, manage sessions, and configure settings through a command-line interface.
+This project is an AI CLI tool designed to interact with various AI providers, so far only implemented for the OpenAI API. 
+It allows users to ask questions, manage sessions, and configure settings through a command-line interface.
 
 ## WARNING
 
