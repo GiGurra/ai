@@ -108,7 +108,7 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 var _ domain.Provider = &Provider{}
 
 func NewGoogleCloudProvider(cfg Config, _ bool) *Provider {
-	// get access token
+	// get access token. TODO: Use a library instead to lower the dependency on gcloud and latencies
 	res := cmder.New("gcloud", "auth", "print-access-token").Run(context.Background())
 	if res.Err != nil {
 		common.FailAndExit(1, "Failed to get access token with gcloud. Check if you are logged in.")
