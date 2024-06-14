@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/GiGurra/cmder"
+	"github.com/bcicen/jstream"
 	"github.com/gigurra/ai/common"
 	"github.com/gigurra/ai/domain"
 	"github.com/samber/lo"
@@ -13,7 +14,6 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 )
@@ -105,6 +105,101 @@ type RequestData struct {
 	SafetySettings   []SafetySetting   `json:"safetySettings,omitempty"`
 }
 
+/*
+[{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "Banana"
+          }
+        ]
+      }
+    }
+  ]
+}
+,
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": " 🍌 \n"
+          }
+        ]
+      },
+      "safetyRatings": [
+        {
+          "category": "HARM_CATEGORY_HATE_SPEECH",
+          "probability": "NEGLIGIBLE",
+          "probabilityScore": 0.06108711,
+          "severity": "HARM_SEVERITY_NEGLIGIBLE",
+          "severityScore": 0.12231338
+        },
+        {
+          "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+          "probability": "NEGLIGIBLE",
+          "probabilityScore": 0.16158468,
+          "severity": "HARM_SEVERITY_NEGLIGIBLE",
+          "severityScore": 0.19498022
+        },
+        {
+          "category": "HARM_CATEGORY_HARASSMENT",
+          "probability": "NEGLIGIBLE",
+          "probabilityScore": 0.110471144,
+          "severity": "HARM_SEVERITY_NEGLIGIBLE",
+          "severityScore": 0.09619517
+        },
+        {
+          "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          "probability": "NEGLIGIBLE",
+          "probabilityScore": 0.2605776,
+          "severity": "HARM_SEVERITY_NEGLIGIBLE",
+          "severityScore": 0.18126321
+        }
+      ]
+    }
+  ]
+}
+,
+{
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": ""
+          }
+        ]
+      },
+      "finishReason": "STOP"
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 3,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 8
+  }
+}
+]
+*/
+
+type UsageMetadata struct {
+	PromptTokenCount     int `json:"promptTokenCount"`
+	CandidatesTokenCount int `json:"candidatesTokenCount"`
+	TotalTokenCount      int `json:"totalTokenCount"`
+}
+
+type ContentResponse struct {
+	Candidates    []Candidate   `json:"candidates"`
+	UsageMetadata UsageMetadata `json:"usageMetadata,omitempty"`
+}
+
 func domainRoleToGoogleRole(role domain.SourceType) string {
 	switch role {
 	case domain.System:
@@ -118,8 +213,18 @@ func domainRoleToGoogleRole(role domain.SourceType) string {
 	}
 }
 
+type SafetyRating struct {
+	Category         string  `json:"category"`
+	Probability      string  `json:"probability"`
+	ProbabilityScore float64 `json:"probabilityScore"`
+	Severity         string  `json:"severity"`
+	SeverityScore    float64 `json:"severityScore"`
+}
+
 type Candidate struct {
-	Content Content `json:"content"`
+	Content       Content        `json:"content"`
+	SafetyRatings []SafetyRating `json:"safetyRatings,omitempty"`
+	FinishReason  string         `json:"finishReason,omitempty"`
 }
 
 func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
@@ -239,7 +344,19 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 	}
 
 	// print response body to stdout
-	_, err = io.Copy(os.Stdout, res.Body)
+	decoder := jstream.NewDecoder(res.Body, 1)
+	for mv := range decoder.Stream() {
+		jsonRepr, _ := json.Marshal(mv.Value)
+		// read back as Content struct
+		var content ContentResponse
+		err := json.Unmarshal(jsonRepr, &content)
+		if err != nil {
+			panic(fmt.Sprintf("Failed to unmarshal response: %v", err))
+		}
+		fmt.Printf("------------NEW MESSAGE-----------\n")
+		fmt.Printf("%+v\n ", content)
+	}
+	//_, err = io.Copy(os.Stdout, res.Body)
 
 	time.Sleep(1 * time.Second)
 
