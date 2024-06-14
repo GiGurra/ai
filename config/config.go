@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/GiGurra/boa/pkg/boa"
 	"github.com/gigurra/ai/common"
+	"github.com/gigurra/ai/providers/google_cloud_provider"
 	"github.com/gigurra/ai/providers/openai_provider"
 	"golang.org/x/crypto/ssh/terminal"
 	"gopkg.in/yaml.v3"
@@ -41,8 +42,9 @@ func (c CliSubcParams) ToCliParams() CliParams {
 }
 
 type StoredConfig struct {
-	Provider string                 `yaml:"provider"`
-	OpenAI   openai_provider.Config `yaml:"openai"`
+	Provider    string                       `yaml:"provider"`
+	OpenAI      openai_provider.Config       `yaml:"openai"`
+	GoogleCloud google_cloud_provider.Config `yaml:"google_cloud"`
 }
 
 type Config struct {
