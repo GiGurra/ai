@@ -23,7 +23,7 @@ type CliParams struct {
 	Question       boa.Required[[]string] `descr:"Question to ask" positional:"true"` // not used, but needed to produce help text
 	Verbose        boa.Required[bool]     `descr:"Verbose output" default:"false" name:"verbose"`
 	Session        boa.Optional[string]   `descr:"Session id (deprecated)" positional:"false" env:"CURRENT_AI_SESSION" name:"session"`
-	Provider       boa.Optional[string]   `descr:"AI provider to use" name:"provider" env:"AI_PROVIDER"`
+	Provider       boa.Optional[string]   `descr:"AI provider to use" name:"provider" env:"AI_PROVIDER" short:"p"`
 	Model          boa.Optional[string]   `descr:"Model to use" name:"model"`
 	Temperature    boa.Optional[float64]  `descr:"Temperature to use" name:"temperature"`
 	ProviderApiKey boa.Optional[string]   `descr:"API key for provider" env:"PROVIDER_API_KEY"`
@@ -162,6 +162,19 @@ func ValidateCfg(
 		}
 		if cfg.OpenAI.APIKey == "" {
 			common.FailAndExit(1, "No openai api key found in config file: "+configFilePath)
+		}
+	case "google-cloud":
+		if p.Model.HasValue() {
+			cfg.GoogleCloud.ModelId = *p.Model.Value()
+		}
+		if cfg.GoogleCloud.ProjectID == "" {
+			common.FailAndExit(1, "No google cloud project id found in config file: "+configFilePath)
+		}
+		if cfg.GoogleCloud.LocationID == "" {
+			common.FailAndExit(1, "No google cloud location id found in config file: "+configFilePath)
+		}
+		if cfg.GoogleCloud.ModelId == "" {
+			common.FailAndExit(1, "No google cloud model id found in config file: "+configFilePath)
 		}
 	default:
 		common.FailAndExit(1, fmt.Sprintf("Unsupported provider: %s", cfg.Provider))
