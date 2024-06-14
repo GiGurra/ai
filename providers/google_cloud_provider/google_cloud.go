@@ -100,7 +100,7 @@ curl -X POST \
 */
 
 type RequestData struct {
-	Content          []Content         `json:"content"`
+	Contents         []Content         `json:"contents"`
 	GenerationConfig *GenerationConfig `json:"generationConfig,omitempty"`
 	SafetySettings   []SafetySetting   `json:"safetySettings,omitempty"`
 }
@@ -124,7 +124,7 @@ type Candidate struct {
 
 func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 	_ = RequestData{
-		Content: lo.Map(question.Messages, func(m domain.Message, _ int) Content {
+		Contents: lo.Map(question.Messages, func(m domain.Message, _ int) Content {
 			return Content{
 				Role: domainRoleToGoogleRole(m.SourceType),
 				Parts: []Part{{
@@ -162,7 +162,7 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 
 func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChunk {
 	bodyT := RequestData{
-		Content: lo.Map(question.Messages, func(m domain.Message, _ int) Content {
+		Contents: lo.Map(question.Messages, func(m domain.Message, _ int) Content {
 			return Content{
 				Role: domainRoleToGoogleRole(m.SourceType),
 				Parts: []Part{{
@@ -204,7 +204,7 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 
 	host := fmt.Sprintf("%s-aiplatform.googleapis.com", o.cfg.LocationID)
 	apiEndpoint := fmt.Sprintf("https://%s", host)
-	u, err := url.Parse(fmt.Sprintf("https://%s/v1/projects/%s/locations/%s/publishers/google/models/%s:streamGenerateContent", apiEndpoint, o.cfg.ProjectID, o.cfg.LocationID, o.cfg.ModelId))
+	u, err := url.Parse(fmt.Sprintf("%s/v1/projects/%s/locations/%s/publishers/google/models/%s:streamGenerateContent", apiEndpoint, o.cfg.ProjectID, o.cfg.LocationID, o.cfg.ModelId))
 	if err != nil {
 		panic(fmt.Sprintf("Failed to parse url: %v", err))
 	}
@@ -223,7 +223,8 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 
 	res, err := http.DefaultClient.Do(&request)
 	if err != nil {
-		panic(fmt.Sprintf("Failed to do request: %v", err))
+		respBody, _ := io.ReadAll(res.Body)
+		panic(fmt.Sprintf("Failed to do request: %v: %s", err, string(respBody)))
 	}
 	defer func() {
 		err := res.Body.Close()
@@ -233,7 +234,8 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 	}()
 
 	if res.StatusCode != 200 {
-		panic(fmt.Sprintf("Failed to do request, unexpected status code: %v", res.StatusCode))
+		respBody, _ := io.ReadAll(res.Body)
+		panic(fmt.Sprintf("Failed to do request, unexpected status code: %v: %s", res.StatusCode, string(respBody)))
 	}
 
 	// print response body to stdout
