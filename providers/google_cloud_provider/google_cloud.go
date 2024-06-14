@@ -1,18 +1,27 @@
 package google_cloud_provider
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/GiGurra/cmder"
 	"github.com/gigurra/ai/common"
 	"github.com/gigurra/ai/domain"
+	"github.com/samber/lo"
+	"io"
+	"log/slog"
+	"net/http"
+	"net/url"
+	"os"
 	"strings"
+	"time"
 )
 
 type Config struct {
-	ApiEndpoint string `yaml:"api_endpoint"`
-	ProjectID   string `yaml:"project_id"`
-	LocationID  string `yaml:"location_id"`
-	ModelId     string `yaml:"model_id"`
+	ProjectID  string `yaml:"project_id"`
+	LocationID string `yaml:"location_id"`
+	ModelId    string `yaml:"model_id"`
 }
 
 type Provider struct {
@@ -96,12 +105,143 @@ type RequestData struct {
 	SafetySettings   []SafetySetting   `json:"safetySettings,omitempty"`
 }
 
+func domainRoleToGoogleRole(role domain.SourceType) string {
+	switch role {
+	case domain.System:
+		return "user"
+	case domain.User:
+		return "user"
+	case domain.Assistant:
+		return "model"
+	default:
+		panic("Unknown role")
+	}
+}
+
+type Candidate struct {
+	Content Content `json:"content"`
+}
+
 func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
+	_ = RequestData{
+		Content: lo.Map(question.Messages, func(m domain.Message, _ int) Content {
+			return Content{
+				Role: domainRoleToGoogleRole(m.SourceType),
+				Parts: []Part{{
+					Text: m.Content,
+				}},
+			}
+		}),
+		GenerationConfig: &GenerationConfig{
+			MaxOutputTokens: 8192,
+			Temperature:     1,
+			TopP:            0.95,
+		},
+		//SafetySettings: []SafetySetting{
+		//	{
+		//		Category:  "HARM_CATEGORY_HATE_SPEECH",
+		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
+		//	},
+		//	{
+		//		Category:  "HARM_CATEGORY_DANGEROUS_CONTENT",
+		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
+		//	},
+		//	{
+		//		Category:  "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
+		//	},
+		//	{
+		//		Category:  "HARM_CATEGORY_HARASSMENT",
+		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
+		//	},
+		//},
+	}
+
 	panic("Not Implemented")
 }
 
 func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChunk {
-	panic("Not Implemented")
+	bodyT := RequestData{
+		Content: lo.Map(question.Messages, func(m domain.Message, _ int) Content {
+			return Content{
+				Role: domainRoleToGoogleRole(m.SourceType),
+				Parts: []Part{{
+					Text: m.Content,
+				}},
+			}
+		}),
+		GenerationConfig: &GenerationConfig{
+			MaxOutputTokens: 8192,
+			Temperature:     1,
+			TopP:            0.95,
+		},
+		//SafetySettings: []SafetySetting{
+		//	{
+		//		Category:  "HARM_CATEGORY_HATE_SPEECH",
+		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
+		//	},
+		//	{
+		//		Category:  "HARM_CATEGORY_DANGEROUS_CONTENT",
+		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
+		//	},
+		//	{
+		//		Category:  "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
+		//	},
+		//	{
+		//		Category:  "HARM_CATEGORY_HARASSMENT",
+		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
+		//	},
+		//},
+	}
+
+	bodyBytes, err := json.Marshal(bodyT)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to marshal body: %v", err))
+	}
+
+	bodyReadCloser := io.NopCloser(bytes.NewReader(bodyBytes))
+
+	host := fmt.Sprintf("%s-aiplatform.googleapis.com", o.cfg.LocationID)
+	apiEndpoint := fmt.Sprintf("https://%s", host)
+	u, err := url.Parse(fmt.Sprintf("https://%s/v1/projects/%s/locations/%s/publishers/google/models/%s:streamGenerateContent", apiEndpoint, o.cfg.ProjectID, o.cfg.LocationID, o.cfg.ModelId))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to parse url: %v", err))
+	}
+
+	request := http.Request{
+		Method: "POST",
+		URL:    u,
+		Header: http.Header{
+			"Authorization": []string{fmt.Sprintf("Bearer %s", o.accessToken)},
+			"Content-Type":  []string{"application/json"},
+		},
+		Body:          bodyReadCloser,
+		ContentLength: int64(len(bodyBytes)),
+		Host:          host,
+	}
+
+	res, err := http.DefaultClient.Do(&request)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to do request: %v", err))
+	}
+	defer func() {
+		err := res.Body.Close()
+		if err != nil {
+			slog.Error(fmt.Sprintf("Failed to close body: %v", err))
+		}
+	}()
+
+	if res.StatusCode != 200 {
+		panic(fmt.Sprintf("Failed to do request, unexpected status code: %v", res.StatusCode))
+	}
+
+	// print response body to stdout
+	_, err = io.Copy(os.Stdout, res.Body)
+
+	time.Sleep(1 * time.Second)
+
+	panic("TODO: Implement request return - Not Implemented")
 }
 
 // prove that OpenAIProvider implements the Provider interface
