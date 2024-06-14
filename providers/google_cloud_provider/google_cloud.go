@@ -238,41 +238,30 @@ type Candidate struct {
 }
 
 func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
-	_ = RequestData{
-		Contents: lo.Map(question.Messages, func(m domain.Message, _ int) Content {
-			return Content{
-				Role: domainRoleToGoogleRole(m.SourceType),
-				Parts: []Part{{
-					Text: m.Content,
-				}},
-			}
-		}),
-		GenerationConfig: &GenerationConfig{
-			MaxOutputTokens: 8192,
-			Temperature:     1,
-			TopP:            0.95,
-		},
-		//SafetySettings: []SafetySetting{
-		//	{
-		//		Category:  "HARM_CATEGORY_HATE_SPEECH",
-		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
-		//	},
-		//	{
-		//		Category:  "HARM_CATEGORY_DANGEROUS_CONTENT",
-		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
-		//	},
-		//	{
-		//		Category:  "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
-		//	},
-		//	{
-		//		Category:  "HARM_CATEGORY_HARASSMENT",
-		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
-		//	},
-		//},
+	stream := o.BasicAskStream(question)
+	acc := strings.Builder{}
+	for respChunk := range stream {
+		if respChunk.Err != nil {
+			return nil, respChunk.Err
+		}
+		cs := respChunk.Resp.GetChoices()
+		if len(cs) != 1 {
+			return nil, fmt.Errorf("Expected exactly one choice")
+		}
+		acc.WriteString(cs[0].Message.Content)
 	}
 
-	panic("Not Implemented")
+	return &RespImpl{
+		Choices: []domain.Choice{
+			{
+				Index: 0,
+				Message: domain.Message{
+					SourceType: domain.System,
+					Content:    acc.String(),
+				},
+			},
+		},
+	}, nil
 }
 
 func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChunk {
