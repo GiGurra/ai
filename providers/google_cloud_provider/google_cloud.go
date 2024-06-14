@@ -1,7 +1,11 @@
 package google_cloud_provider
 
 import (
+	"context"
+	"github.com/GiGurra/cmder"
+	"github.com/gigurra/ai/common"
 	"github.com/gigurra/ai/domain"
+	"strings"
 )
 
 type Config struct {
@@ -12,7 +16,8 @@ type Config struct {
 }
 
 type Provider struct {
-	cfg Config
+	cfg         Config
+	accessToken string
 }
 
 type GenerationConfig struct {
@@ -103,8 +108,14 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 var _ domain.Provider = &Provider{}
 
 func NewGoogleCloudProvider(cfg Config, _ bool) *Provider {
+	// get access token
+	res := cmder.New("gcloud", "auth", "print-access-token").Run(context.Background())
+	if res.Err != nil {
+		common.FailAndExit(1, "Failed to get access token with gcloud. Check if you are logged in.")
+	}
 	return &Provider{
-		cfg: cfg,
+		cfg:         cfg,
+		accessToken: strings.TrimSpace(res.StdOut),
 	}
 }
 
