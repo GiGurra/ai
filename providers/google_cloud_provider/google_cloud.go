@@ -15,7 +15,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
 type Config struct {
@@ -213,6 +212,17 @@ func domainRoleToGoogleRole(role domain.SourceType) string {
 	}
 }
 
+func googleToDomainRole(role string) domain.SourceType {
+	switch role {
+	case "user":
+		return domain.User
+	case "model":
+		return domain.Assistant
+	default:
+		panic(fmt.Sprintf("Unknown google role: %s", role))
+	}
+}
+
 type SafetyRating struct {
 	Category         string  `json:"category"`
 	Probability      string  `json:"probability"`
@@ -266,101 +276,136 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 }
 
 func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChunk {
-	bodyT := RequestData{
-		Contents: lo.Map(question.Messages, func(m domain.Message, _ int) Content {
-			return Content{
-				Role: domainRoleToGoogleRole(m.SourceType),
-				Parts: []Part{{
-					Text: m.Content,
-				}},
+
+	respChan := make(chan domain.RespChunk)
+
+	go func() {
+		defer close(respChan)
+		bodyT := RequestData{
+			Contents: lo.Map(question.Messages, func(m domain.Message, _ int) Content {
+				return Content{
+					Role: domainRoleToGoogleRole(m.SourceType),
+					Parts: []Part{{
+						Text: m.Content,
+					}},
+				}
+			}),
+			GenerationConfig: &GenerationConfig{
+				MaxOutputTokens: 8192,
+				Temperature:     1,
+				TopP:            0.95,
+			},
+			//SafetySettings: []SafetySetting{
+			//	{
+			//		Category:  "HARM_CATEGORY_HATE_SPEECH",
+			//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
+			//	},
+			//	{
+			//		Category:  "HARM_CATEGORY_DANGEROUS_CONTENT",
+			//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
+			//	},
+			//	{
+			//		Category:  "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+			//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
+			//	},
+			//	{
+			//		Category:  "HARM_CATEGORY_HARASSMENT",
+			//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
+			//	},
+			//},
+		}
+
+		bodyBytes, err := json.Marshal(bodyT)
+		if err != nil {
+			panic(fmt.Sprintf("Failed to marshal body: %v", err))
+		}
+
+		bodyReadCloser := io.NopCloser(bytes.NewReader(bodyBytes))
+
+		host := fmt.Sprintf("%s-aiplatform.googleapis.com", o.cfg.LocationID)
+		apiEndpoint := fmt.Sprintf("https://%s", host)
+		u, err := url.Parse(fmt.Sprintf("%s/v1/projects/%s/locations/%s/publishers/google/models/%s:streamGenerateContent", apiEndpoint, o.cfg.ProjectID, o.cfg.LocationID, o.cfg.ModelId))
+		if err != nil {
+			panic(fmt.Sprintf("Failed to parse url: %v", err))
+		}
+
+		request := http.Request{
+			Method: "POST",
+			URL:    u,
+			Header: http.Header{
+				"Authorization": []string{fmt.Sprintf("Bearer %s", o.accessToken)},
+				"Content-Type":  []string{"application/json"},
+			},
+			Body:          bodyReadCloser,
+			ContentLength: int64(len(bodyBytes)),
+			Host:          host,
+		}
+
+		res, err := http.DefaultClient.Do(&request)
+		if err != nil {
+			respBody, _ := io.ReadAll(res.Body)
+			panic(fmt.Sprintf("Failed to do request: %v: %s", err, string(respBody)))
+		}
+		defer func() {
+			err := res.Body.Close()
+			if err != nil {
+				slog.Error(fmt.Sprintf("Failed to close body: %v", err))
 			}
-		}),
-		GenerationConfig: &GenerationConfig{
-			MaxOutputTokens: 8192,
-			Temperature:     1,
-			TopP:            0.95,
-		},
-		//SafetySettings: []SafetySetting{
-		//	{
-		//		Category:  "HARM_CATEGORY_HATE_SPEECH",
-		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
-		//	},
-		//	{
-		//		Category:  "HARM_CATEGORY_DANGEROUS_CONTENT",
-		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
-		//	},
-		//	{
-		//		Category:  "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
-		//	},
-		//	{
-		//		Category:  "HARM_CATEGORY_HARASSMENT",
-		//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
-		//	},
-		//},
-	}
+		}()
 
-	bodyBytes, err := json.Marshal(bodyT)
-	if err != nil {
-		panic(fmt.Sprintf("Failed to marshal body: %v", err))
-	}
-
-	bodyReadCloser := io.NopCloser(bytes.NewReader(bodyBytes))
-
-	host := fmt.Sprintf("%s-aiplatform.googleapis.com", o.cfg.LocationID)
-	apiEndpoint := fmt.Sprintf("https://%s", host)
-	u, err := url.Parse(fmt.Sprintf("%s/v1/projects/%s/locations/%s/publishers/google/models/%s:streamGenerateContent", apiEndpoint, o.cfg.ProjectID, o.cfg.LocationID, o.cfg.ModelId))
-	if err != nil {
-		panic(fmt.Sprintf("Failed to parse url: %v", err))
-	}
-
-	request := http.Request{
-		Method: "POST",
-		URL:    u,
-		Header: http.Header{
-			"Authorization": []string{fmt.Sprintf("Bearer %s", o.accessToken)},
-			"Content-Type":  []string{"application/json"},
-		},
-		Body:          bodyReadCloser,
-		ContentLength: int64(len(bodyBytes)),
-		Host:          host,
-	}
-
-	res, err := http.DefaultClient.Do(&request)
-	if err != nil {
-		respBody, _ := io.ReadAll(res.Body)
-		panic(fmt.Sprintf("Failed to do request: %v: %s", err, string(respBody)))
-	}
-	defer func() {
-		err := res.Body.Close()
-		if err != nil {
-			slog.Error(fmt.Sprintf("Failed to close body: %v", err))
+		if res.StatusCode != 200 {
+			respBody, _ := io.ReadAll(res.Body)
+			panic(fmt.Sprintf("Failed to do request, unexpected status code: %v: %s", res.StatusCode, string(respBody)))
 		}
+
+		// print response body to stdout
+
+		decoder := jstream.NewDecoder(res.Body, 1)
+		for mv := range decoder.Stream() {
+			jsonRepr, _ := json.Marshal(mv.Value)
+			// read back as Content struct
+			var content ContentResponse
+			err := json.Unmarshal(jsonRepr, &content)
+			if err != nil {
+				panic(fmt.Sprintf("Failed to unmarshal response: %v", err))
+			}
+			if len(content.Candidates) == 0 {
+				panic(fmt.Sprintf("No candidates in response"))
+			}
+			firstCandidate := content.Candidates[0]
+			if firstCandidate.FinishReason != "" {
+				return
+			}
+			respChan <- domain.RespChunk{
+				Resp: &RespImpl{
+					Choices: []domain.Choice{
+						{
+							Index: 0,
+							Message: domain.Message{
+								SourceType: googleToDomainRole(firstCandidate.Content.Role),
+								Content:    firstCandidate.Content.Parts[0].Text,
+							},
+						},
+					},
+				},
+			}
+		}
+
 	}()
+	return respChan
+}
 
-	if res.StatusCode != 200 {
-		respBody, _ := io.ReadAll(res.Body)
-		panic(fmt.Sprintf("Failed to do request, unexpected status code: %v: %s", res.StatusCode, string(respBody)))
-	}
+type RespImpl struct {
+	Choices []domain.Choice
+	Usage   domain.Usage
+}
 
-	// print response body to stdout
-	decoder := jstream.NewDecoder(res.Body, 1)
-	for mv := range decoder.Stream() {
-		jsonRepr, _ := json.Marshal(mv.Value)
-		// read back as Content struct
-		var content ContentResponse
-		err := json.Unmarshal(jsonRepr, &content)
-		if err != nil {
-			panic(fmt.Sprintf("Failed to unmarshal response: %v", err))
-		}
-		fmt.Printf("------------NEW MESSAGE-----------\n")
-		fmt.Printf("%+v\n ", content)
-	}
-	//_, err = io.Copy(os.Stdout, res.Body)
+func (r *RespImpl) GetChoices() []domain.Choice {
+	return r.Choices
+}
 
-	time.Sleep(1 * time.Second)
-
-	panic("TODO: Implement request return - Not Implemented")
+func (r *RespImpl) GetUsage() domain.Usage {
+	return r.Usage
 }
 
 // prove that OpenAIProvider implements the Provider interface
