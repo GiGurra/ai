@@ -246,7 +246,7 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 		}
 		cs := respChunk.Resp.GetChoices()
 		if len(cs) != 1 {
-			return nil, fmt.Errorf("Expected exactly one choice")
+			return nil, fmt.Errorf("expected exactly one choice")
 		}
 		acc.WriteString(cs[0].Message.Content)
 	}
