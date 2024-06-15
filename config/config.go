@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/GiGurra/boa/pkg/boa"
 	"github.com/gigurra/ai/common"
+	"github.com/gigurra/ai/providers/google_ai_studio_provider"
 	"github.com/gigurra/ai/providers/google_cloud_provider"
 	"github.com/gigurra/ai/providers/openai_provider"
 	"golang.org/x/crypto/ssh/terminal"
@@ -42,9 +43,10 @@ func (c CliSubcParams) ToCliParams() CliParams {
 }
 
 type StoredConfig struct {
-	Provider    string                       `yaml:"provider"`
-	OpenAI      openai_provider.Config       `yaml:"openai"`
-	GoogleCloud google_cloud_provider.Config `yaml:"google_cloud"`
+	Provider       string                           `yaml:"provider"`
+	OpenAI         openai_provider.Config           `yaml:"openai"`
+	GoogleCloud    google_cloud_provider.Config     `yaml:"google_cloud"`
+	GoogleAiStudio google_ai_studio_provider.Config `yaml:"google_ai_studio"`
 }
 
 type Config struct {
@@ -54,6 +56,7 @@ type Config struct {
 
 func (c Config) WithoutSecrets() Config {
 	c.OpenAI.APIKey = "*****"
+	c.GoogleAiStudio.APIKey = "*****"
 	return c
 }
 
@@ -175,6 +178,16 @@ func ValidateCfg(
 		}
 		if cfg.GoogleCloud.ModelId == "" {
 			common.FailAndExit(1, "No google cloud model id found in config file: "+configFilePath)
+		}
+	case "google-ai-studio":
+		if p.Model.HasValue() {
+			cfg.GoogleAiStudio.ModelId = *p.Model.Value()
+		}
+		if cfg.GoogleAiStudio.APIKey == "" {
+			common.FailAndExit(1, "No google ai studio api_key found in config file: "+configFilePath)
+		}
+		if cfg.GoogleAiStudio.ModelId == "" {
+			common.FailAndExit(1, "No google ai studio model id found in config file: "+configFilePath)
 		}
 	default:
 		common.FailAndExit(1, fmt.Sprintf("Unsupported provider: %s", cfg.Provider))
