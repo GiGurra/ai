@@ -21,7 +21,7 @@ See below for configuration examples.
 ## WARNING
 
 - This tool is likely to significantly increase your OpenAI bill :).
-- I built this tool for fun, over the course of 3 evenings. It's a hack, treat it as such.
+- I initially built this tool for fun, over the course of 3 evenings. It's a hack, treat it as such.
 
 ## Requirements
 
