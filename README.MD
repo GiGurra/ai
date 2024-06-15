@@ -7,8 +7,16 @@ A minimal cli client turning each terminal session into a persistent conversatio
 This application upgrades every terminal session to a conversation with an AI model. It is a command-line interface,
 adding an `ai` command.
 
-This project is an AI CLI tool designed to interact with various AI providers, so far only implemented for the OpenAI API. 
+This project is an AI CLI tool designed to interact with various AI providers.
 It allows users to ask questions, manage sessions, and configure settings through a command-line interface.
+
+So far the following AI providers are supported:
+
+* OpenAI
+* Google Cloud Vertex AI
+* Google AI Studio
+
+See below for configuration examples.
 
 ## WARNING
 
@@ -185,7 +193,7 @@ You can use this tool together with cat or aicat to analyze a set of file.
     ```sh
     aicat . -p "*.go,*.js" | ai what do you think of this code?
     ```
-  
+
 - **Find where specific code is in a code base**:
     ```sh
     aicat . -p "*.go,*.js" | ai "where is the code that does X?"
@@ -203,12 +211,34 @@ exist. You can configure the AI provider, model, and other settings in this file
 
 ### Example Configuration
 
+For OpenAI
+
 ```yaml
 provider: openai
 openai:
   api_key: "your_openai_api_key"
   model: "gpt-4o"
   temperature: 0.7
+```
+
+For Google Cloud Vertex AI (e.g. gemini-1.5-pro). This will authenticate by delegating
+to `gcloud auth print-access-token` - a mechanism I will probably replace in the future.
+
+```yaml
+provider: google-cloud
+google-cloud:
+  project_id: "my-project-1"
+  location_id: "europe-west4"
+  model_id: "gemini-1.5-pro-001"
+```
+
+For Google AI Studio
+
+```yaml
+provider: google-ai-studio
+google_ai_studio:
+  api_key: "your-api-key"
+  model_id: "gemini-1.5-pro-001"
 ```
 
 ## License
