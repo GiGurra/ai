@@ -3,6 +3,7 @@
 A minimal cli client turning each terminal session into a persistent conversation with an LLM.
 
 Conversation state is mapped to the terminal/shell session, and can be restored/loaded later and renamed to something more useful.
+`ai` does not take over or replace your shell - it is simply a small binary you can send data and ask questions.
 
 So far the following AI providers are supported:
 
