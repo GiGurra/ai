@@ -1,13 +1,6 @@
 # AI CLI Tool
 
 A minimal cli client turning each terminal session into a persistent conversation with an AI model.
-
-## Overview
-
-This application upgrades every terminal session to a conversation with an AI model. It is a command-line interface,
-adding an `ai` command.
-
-This project is an AI CLI tool designed to interact with various AI providers.
 It allows users to ask questions, manage sessions, and configure settings through a command-line interface.
 
 So far the following AI providers are supported:
@@ -16,16 +9,14 @@ So far the following AI providers are supported:
 * Google Cloud Vertex AI
 * Google AI Studio
 
-See below for configuration examples.
-
 ## WARNING
 
-- This tool is likely to significantly increase your OpenAI bill :).
+- This tool is likely to significantly increase your AI provider bill :).
 - I initially built this tool for fun, over the course of 3 evenings. It's a hack, treat it as such.
 
 ## Requirements
 
-- An OpenAPI API key (or other AI provider API key, if you or I add providers for such)
+- An OpenAPI API key, or equivalent for other providers
 
 ## API
 
