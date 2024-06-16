@@ -1,4 +1,4 @@
-# AI CLI Tool
+# `ai` CLI Tool
 
 A minimal cli client turning each terminal session into a persistent conversation with an LLM.
 
