@@ -1,6 +1,6 @@
 # AI CLI Tool
 
-A minimal cli client turning each terminal session into a persistent conversation with an AI model.
+A minimal cli client turning each terminal session into a persistent conversation with an LLM.
 
 Conversation state is mapped to the terminal/shell session, and can be restored/loaded later and renamed to something more useful.
 
