@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/GiGurra/boa/pkg/boa"
 	"github.com/gigurra/ai/common"
+	"github.com/gigurra/ai/providers/anthropic_provider"
 	"github.com/gigurra/ai/providers/google_ai_studio_provider"
 	"github.com/gigurra/ai/providers/google_cloud_provider"
 	"github.com/gigurra/ai/providers/openai_provider"
@@ -47,6 +48,7 @@ type StoredConfig struct {
 	OpenAI         openai_provider.Config           `yaml:"openai"`
 	GoogleCloud    google_cloud_provider.Config     `yaml:"google_cloud"`
 	GoogleAiStudio google_ai_studio_provider.Config `yaml:"google_ai_studio"`
+	Anthropic      anthropic_provider.Config        `yaml:"anthropic"`
 }
 
 type Config struct {
@@ -57,6 +59,7 @@ type Config struct {
 func (c Config) WithoutSecrets() Config {
 	c.OpenAI.APIKey = "*****"
 	c.GoogleAiStudio.APIKey = "*****"
+	c.Anthropic.APIKey = "*****"
 	return c
 }
 
@@ -188,6 +191,16 @@ func ValidateCfg(
 		}
 		if cfg.GoogleAiStudio.ModelId == "" {
 			common.FailAndExit(1, "No google ai studio model id found in config file: "+configFilePath)
+		}
+	case "anthropic":
+		if p.Model.HasValue() {
+			cfg.Anthropic.Model = *p.Model.Value()
+		}
+		if p.ProviderApiKey.HasValue() {
+			cfg.Anthropic.APIKey = *p.ProviderApiKey.Value()
+		}
+		if cfg.Anthropic.APIKey == "" {
+			common.FailAndExit(1, "No anthropic api key found in config file: "+configFilePath)
 		}
 	default:
 		common.FailAndExit(1, fmt.Sprintf("Unsupported provider: %s", cfg.Provider))
