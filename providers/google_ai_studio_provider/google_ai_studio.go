@@ -320,8 +320,6 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 			Host:          host,
 		}
 
-		slog.Info(fmt.Sprintf("Request: %+v", request))
-
 		//// add query param key=${API_KEY}
 		//q := request.URL.Query()
 		//q.Add("key", o.cfg.APIKey)
