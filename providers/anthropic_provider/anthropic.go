@@ -60,10 +60,17 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 
 	accum := strings.Builder{}
 
+	promptTokens := 0
+	completionTokens := 0
+
 	for chunk := range stream {
 		if chunk.Err != nil {
 			return nil, chunk.Err
 		}
+
+		promptTokens += chunk.Resp.GetUsage().PromptTokens
+		completionTokens += chunk.Resp.GetUsage().CompletionTokens
+
 		if len(chunk.Resp.GetChoices()) == 0 {
 			continue // this is the final chunk
 		}
@@ -81,9 +88,9 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 			},
 		},
 		Usage: domain.Usage{
-			PromptTokens:     0,
-			CompletionTokens: 0,
-			TotalTokens:      0,
+			PromptTokens:     promptTokens,
+			CompletionTokens: completionTokens,
+			TotalTokens:      promptTokens + completionTokens,
 		},
 	}, nil
 }
