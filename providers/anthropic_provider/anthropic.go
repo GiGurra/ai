@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 type Config struct {
@@ -88,20 +89,158 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 	}, nil
 }
 
-type SSEForwarder struct {
-	resChan chan domain.RespChunk
+type ResponseStreamHandler struct {
+	resChan                  chan domain.RespChunk
+	buffer                   strings.Builder
+	isInsideTextContentBlock bool
 }
 
-func (p2 *SSEForwarder) Write(p []byte) (n int, err error) {
-	fmt.Printf("%s", p)
+type ContentBlock struct {
+	Type string `json:"type"`
+	Text string `json:"text"`
+}
+
+type ContentBlockStart struct {
+	Type         string       `json:"type"`
+	Index        int          `json:"index"`
+	ContentBlock ContentBlock `json:"content_block"`
+}
+
+type ContentBlockDelta struct {
+	Type  string       `json:"type"`
+	Index int          `json:"index"`
+	Delta ContentBlock `json:"delta"`
+}
+
+func (p2 *ResponseStreamHandler) ProcessBuffer(forceFlush bool) error {
+retry:
+
+	//slog.Info(fmt.Sprintf("Processing buffer: %s", strings.TrimSpace(p2.buffer.String())))
+
+	if p2.buffer.Len() == 0 {
+		return nil
+	}
+
+	// sanitize/remove empty lines
+	origLinesInBuffer := strings.Split(strings.TrimSpace(p2.buffer.String()), "\n")
+	linesInBuffer := lo.Map(origLinesInBuffer, func(item string, index int) string {
+		return strings.TrimSpace(item)
+	})
+	linesInBuffer = lo.Filter(linesInBuffer, func(item string, index int) bool {
+		return item != ""
+	})
+
+	if len(linesInBuffer) != len(origLinesInBuffer) {
+		p2.buffer.Reset()
+		for i := 0; i < len(linesInBuffer); i++ {
+			p2.buffer.WriteString(linesInBuffer[i])
+			p2.buffer.WriteString("\n")
+		}
+		goto retry
+	}
+
+	if len(linesInBuffer) >= 2 {
+		eventLine := linesInBuffer[0]
+		dataLine := linesInBuffer[1]
+
+		//slog.Info(fmt.Sprintf("Event line: %s", eventLine))
+		if !strings.HasPrefix(eventLine, "event: ") || !strings.HasPrefix(dataLine, "data: ") {
+			return fmt.Errorf(fmt.Sprintf("Invalid SSE event contents: %s", p2.buffer.String()))
+		}
+
+		eventType := strings.TrimSpace(strings.TrimPrefix(eventLine, "event: "))
+		dataStr := strings.TrimSpace(strings.TrimPrefix(dataLine, "data: "))
+
+		// check if dataStr is a valid json object, which indicates we have received all the data
+		var jsObj map[string]any
+		err := json.Unmarshal([]byte(dataStr), &jsObj)
+		if err != nil {
+			// not enough data received yet, just return and wait for next chunk
+			if !forceFlush {
+				//slog.Info(fmt.Sprintf("Incomplete data in buffer, waiting for next chunk: %s", p2.buffer.String()))
+				return nil
+			} else {
+				return fmt.Errorf("incomplete data in buffer when final flush/Checkbuffer was called: %s", p2.buffer.String())
+			}
+		}
+
+		slog.Info(fmt.Sprintf("Received event: %s, data: %s", eventType, dataStr))
+
+		switch eventType {
+		case "message_start":
+			// ignore, TODO: Read input token count here
+		case "content_block_start":
+			var contentBlockStart ContentBlockStart
+			err := json.Unmarshal([]byte(dataStr), &contentBlockStart)
+			if err != nil {
+				return fmt.Errorf("failed to unmarshal content block start: %v", err)
+			}
+			if contentBlockStart.ContentBlock.Type != "text" {
+				p2.isInsideTextContentBlock = true
+			}
+		case "content_block_delta":
+			if p2.isInsideTextContentBlock {
+				var contentBlockDelta ContentBlockDelta
+				err := json.Unmarshal([]byte(dataStr), &contentBlockDelta)
+				if err != nil {
+					return fmt.Errorf("failed to unmarshal content block delta: %v", err)
+				}
+				p2.resChan <- domain.RespChunk{
+					Resp: &BasicAskResponse{
+						Choices: []domain.Choice{
+							{
+								Index: 0,
+								Message: domain.Message{
+									SourceType: domain.Assistant,
+									Content:    contentBlockDelta.Delta.Text,
+								},
+							},
+						},
+					},
+				}
+			} else {
+				// ignore, we're not inside a content block
+			}
+		case "content_block_stop":
+			p2.isInsideTextContentBlock = false
+		case "message_stop":
+			// we're done!
+		default:
+			// do nothing, unsupported (by our ai) events
+		}
+
+		// now we know the entire event has been received
+		p2.buffer.Reset()
+		for i := 2; i < len(linesInBuffer); i++ {
+			p2.buffer.WriteString(linesInBuffer[i])
+			p2.buffer.WriteString("\n")
+		}
+		time.Sleep(1 * time.Second)
+		goto retry // we might have already received another event
+	}
+
+	// not enough data yet to process
+	return nil
+}
+
+func (p2 *ResponseStreamHandler) Write(p []byte) (int, error) {
+	p2.buffer.WriteString(string(p))
+	err := p2.ProcessBuffer(false)
+	if err != nil {
+		return 0, fmt.Errorf("failed to check/process receive buffer: %v", err)
+	}
 	return len(p), nil
 }
 
-func (p2 *SSEForwarder) finish() {
-	// TODO: Flush any remaining data
+func (p2 *ResponseStreamHandler) finish() error {
+	err := p2.ProcessBuffer(true)
+	if err != nil {
+		return fmt.Errorf("failed to check/process receive buffer: %v", err)
+	}
+	return nil
 }
 
-var _ io.Writer = &SSEForwarder{}
+var _ io.Writer = &ResponseStreamHandler{}
 
 func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChunk {
 	resChan := make(chan domain.RespChunk, 1024)
@@ -182,12 +321,15 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 	go func() {
 		defer closeBody()
 		defer close(resChan)
-		forwarder := SSEForwarder{resChan: resChan}
+		forwarder := ResponseStreamHandler{resChan: resChan}
 		_, err = io.Copy(&forwarder, res.Body)
 		if err != nil {
 			common.FailAndExit(1, fmt.Sprintf("failed to receive response body: %v", err))
 		}
-		forwarder.finish()
+		err = forwarder.finish()
+		if err != nil {
+			common.FailAndExit(1, fmt.Sprintf("failed to finish response body: %v", err))
+		}
 	}()
 
 	return resChan
