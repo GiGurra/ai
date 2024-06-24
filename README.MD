@@ -8,8 +8,9 @@ Conversation state is mapped to the terminal/shell session, and can be restored/
 So far the following AI providers are supported:
 
 * OpenAI
-* Google Cloud Vertex AI
-* Google AI Studio
+* Anthropic
+* Google Cloud Vertex AI (experimental, no token count supported)
+* Google AI Studio (untested)
 
 ## WARNING
 
