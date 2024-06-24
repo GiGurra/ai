@@ -389,12 +389,12 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 	go func() {
 		defer closeBody()
 		defer close(resChan)
-		forwarder := ResponseStreamHandler{resChan: resChan}
-		_, err = io.Copy(&forwarder, res.Body)
+		handler := ResponseStreamHandler{resChan: resChan}
+		_, err = io.Copy(&handler, res.Body)
 		if err != nil {
 			common.FailAndExit(1, fmt.Sprintf("failed to receive response body: %v", err))
 		}
-		err = forwarder.finish()
+		err = handler.finish()
 		if err != nil {
 			common.FailAndExit(1, fmt.Sprintf("failed to finish response body: %v", err))
 		}
