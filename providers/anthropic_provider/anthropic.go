@@ -65,7 +65,7 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 			return nil, chunk.Err
 		}
 		if len(chunk.Resp.GetChoices()) == 0 {
-			return nil, fmt.Errorf("expected at least one choice")
+			continue // this is the final chunk
 		}
 		accum.WriteString(chunk.Resp.GetChoices()[0].Message.Content)
 	}
