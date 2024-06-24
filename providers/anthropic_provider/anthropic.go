@@ -210,7 +210,6 @@ retry:
 
 		switch eventType {
 		case "message_start":
-			// ignore, TODO: Read input token count here
 			var messageStart MessageStart
 			err := json.Unmarshal([]byte(dataStr), &messageStart)
 			if err != nil {
