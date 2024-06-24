@@ -3,7 +3,6 @@ package anthropic_provider
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/gigurra/ai/common"
 	"github.com/gigurra/ai/domain"
@@ -89,15 +88,20 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 	}, nil
 }
 
-type PrintWriter struct {
+type SSEForwarder struct {
+	resChan chan domain.RespChunk
 }
 
-func (p2 *PrintWriter) Write(p []byte) (n int, err error) {
+func (p2 *SSEForwarder) Write(p []byte) (n int, err error) {
 	fmt.Printf("%s", p)
 	return len(p), nil
 }
 
-var _ io.Writer = &PrintWriter{}
+func (p2 *SSEForwarder) finish() {
+	// TODO: Flush any remaining data
+}
+
+var _ io.Writer = &SSEForwarder{}
 
 func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChunk {
 	resChan := make(chan domain.RespChunk, 1024)
@@ -124,20 +128,6 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 		common.FailAndExit(1, "Anthropic max_output_tokens configuration parameter is required")
 	}
 
-	/**
-	  curl https://api.anthropic.com/v1/messages \
-	       --header "anthropic-version: 2023-06-01" \
-	       --header "content-type: application/json" \
-	       --header "x-api-key: $ANTHROPIC_API_KEY" \
-	       --data \
-	  '{
-	    "model": "claude-3-5-sonnet-20240620",
-	    "messages": [{"role": "user", "content": "Hello"}],
-	    "max_tokens": 256,
-	    "stream": true
-	  }'
-	*/
-
 	body := RequestBody{
 		Model: o.cfg.Model,
 		Messages: lo.Map(question.Messages, func(message domain.Message, index int) Message {
@@ -161,7 +151,6 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 		Method: "POST",
 		URL:    u,
 		Header: http.Header{
-			//"Authorization": []string{fmt.Sprintf("Bearer %s", o.cfg.APIKey)},
 			"anthropic-version": []string{o.cfg.Version},
 			"Content-Type":      []string{"application/json"},
 			"x-api-key":         []string{o.cfg.APIKey},
@@ -174,75 +163,32 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 	res, err := http.DefaultClient.Do(&request)
 	if err != nil {
 		respBody, _ := io.ReadAll(res.Body)
-		panic(fmt.Sprintf("Failed to do request: %v: %s", err, string(respBody)))
+		common.FailAndExit(1, fmt.Sprintf("Failed to do request: %v: %s", err, string(respBody)))
 	}
-	defer func() {
+
+	closeBody := func() {
 		err := res.Body.Close()
 		if err != nil {
 			slog.Error(fmt.Sprintf("Failed to close body: %v", err))
 		}
-	}()
+	}
 
 	if res.StatusCode != 200 {
+		defer closeBody()
 		respBody, _ := io.ReadAll(res.Body)
-		panic(fmt.Sprintf("Failed to do request, unexpected status code: %v: %s", res.StatusCode, string(respBody)))
+		common.FailAndExit(1, fmt.Sprintf("Failed to do request, unexpected status code: %v: %s", res.StatusCode, string(respBody)))
 	}
 
-	printWriter := PrintWriter{}
-	_, err = io.Copy(&printWriter, res.Body)
-	if err != nil {
-		panic(fmt.Sprintf("Failed to copy response body: %v", err))
-	}
-	//
-	//req := openai.ChatCompletionRequest{
-	//	Model: o.cfg.Model,
-	//	Messages: lo.Map(question.Messages, func(message domain.Message, index int) openai.ChatCompletionMessage {
-	//		return openai.ChatCompletionMessage{
-	//			Role:    string(message.SourceType),
-	//			Content: message.Content,
-	//		}
-	//	}),
-	//	Temperature: float32(o.cfg.Temperature),
-	//	Stream:      true,
-	//	StreamOptions: &openai.StreamOptions{
-	//		IncludeUsage: true,
-	//	},
-	//}
-	//remoteStream, err := o.client.CreateChatCompletionStream(
-	//	context.Background(),
-	//	req,
-	//)
-	//if err != nil {
-	//	resChan <- domain.RespChunk{Err: fmt.Errorf("failed to create chat completion stream: %w", err)}
-	//	close(resChan)
-	//	return resChan
-	//}
-	//go func() {
-	//
-	//	defer func() {
-	//		err := remoteStream.Close()
-	//		if err != nil {
-	//			slog.Error(fmt.Sprintf("failed to close chat completion stream: %v", err))
-	//		}
-	//	}()
-	//	defer close(resChan)
-	//
-	//	for {
-	//		response, err := remoteStream.Recv()
-	//		if errors.Is(err, io.EOF) {
-	//			return //we're done
-	//		}
-	//
-	//		if err != nil {
-	//			resChan <- domain.RespChunk{Err: fmt.Errorf("failed to receive stream response: %w", err)}
-	//			return
-	//		}
-	//
-	//		resChan <- domain.RespChunk{Resp: openAiStrResp2Resp(response)}
-	//	}
-	//}()
-
-	resChan <- domain.RespChunk{Err: errors.New("not implemented")}
+	go func() {
+		defer closeBody()
+		defer close(resChan)
+		forwarder := SSEForwarder{resChan: resChan}
+		_, err = io.Copy(&forwarder, res.Body)
+		if err != nil {
+			common.FailAndExit(1, fmt.Sprintf("failed to receive response body: %v", err))
+		}
+		forwarder.finish()
+	}()
 
 	return resChan
 }
