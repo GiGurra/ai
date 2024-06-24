@@ -51,6 +51,21 @@ type StoredConfig struct {
 	Anthropic      anthropic_provider.Config        `yaml:"anthropic"`
 }
 
+func (s StoredConfig) Model() string {
+	switch s.Provider {
+	case "openai":
+		return s.OpenAI.Model
+	case "google-cloud":
+		return s.GoogleCloud.ModelId
+	case "google-ai-studio":
+		return s.GoogleAiStudio.ModelId
+	case "anthropic":
+		return s.Anthropic.Model
+	default:
+		return ""
+	}
+}
+
 type Config struct {
 	StoredConfig
 	Verbose bool

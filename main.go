@@ -182,7 +182,10 @@ func statusCmd() *cobra.Command {
 		Short:  "Prints info about current session",
 		Params: &p,
 		Run: func(cmd *cobra.Command, args []string) {
+			_, cfgInFile := config.LoadCfgFile()
 			s := session.LoadSession(session.GetSessionID(p.Session.GetOrElse("")))
+			fmt.Printf("current provider: %s\n", cfgInFile.Provider)
+			fmt.Printf("current model: %s\n", cfgInFile.Model())
 			fmt.Printf("config file: %s\n", config.CfgFilePath())
 			fmt.Printf("storage dir: %s\n", session.Dir())
 			fmt.Printf("lookup dir: %s\n", session.LookupDir())
