@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
 type Config struct {
@@ -164,7 +163,7 @@ retry:
 			}
 		}
 
-		slog.Info(fmt.Sprintf("Received event: %s, data: %s", eventType, dataStr))
+		//slog.Info(fmt.Sprintf("Received event: %s, data: %s", eventType, dataStr))
 
 		switch eventType {
 		case "message_start":
@@ -175,7 +174,7 @@ retry:
 			if err != nil {
 				return fmt.Errorf("failed to unmarshal content block start: %v", err)
 			}
-			if contentBlockStart.ContentBlock.Type != "text" {
+			if contentBlockStart.ContentBlock.Type == "text" {
 				p2.isInsideTextContentBlock = true
 			}
 		case "content_block_delta":
@@ -199,6 +198,7 @@ retry:
 					},
 				}
 			} else {
+				//slog.Info(fmt.Sprintf("Ignoring content block delta: %s", dataStr))
 				// ignore, we're not inside a content block
 			}
 		case "content_block_stop":
@@ -215,7 +215,7 @@ retry:
 			p2.buffer.WriteString(linesInBuffer[i])
 			p2.buffer.WriteString("\n")
 		}
-		time.Sleep(1 * time.Second)
+		//time.Sleep(1 * time.Second)
 		goto retry // we might have already received another event
 	}
 
