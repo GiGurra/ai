@@ -92,6 +92,8 @@ type ResponseStreamHandler struct {
 	resChan                  chan domain.RespChunk
 	buffer                   strings.Builder
 	isInsideTextContentBlock bool
+	accumInputTokens         int
+	accumOutputTokens        int
 }
 
 type ContentBlock struct {
@@ -109,6 +111,38 @@ type ContentBlockDelta struct {
 	Type  string       `json:"type"`
 	Index int          `json:"index"`
 	Delta ContentBlock `json:"delta"`
+}
+
+type Usage struct {
+	InputTokens  int `json:"input_tokens"`
+	OutputTokens int `json:"output_tokens"`
+}
+
+type MessageStartMessage struct {
+	ID           string `json:"id"`
+	Type         string `json:"type"`
+	Role         string `json:"role"`
+	Model        string `json:"model"`
+	Content      any    `json:"content"`
+	StopReason   any    `json:"stop_reason"`
+	StopSequence any    `json:"stop_sequence"`
+	Usage        Usage  `json:"usage"`
+}
+
+type MessageStart struct {
+	Type    string              `json:"type"`
+	Message MessageStartMessage `json:"message"`
+}
+
+type MessageDeltaDelta struct {
+	StopReason   any `json:"stop_reason"`
+	StopSequence any `json:"stop_sequence"`
+}
+
+type MessageDelta struct {
+	Type  string            `json:"type"`
+	Delta MessageDeltaDelta `json:"delta"`
+	Usage Usage             `json:"usage"`
 }
 
 func (p2 *ResponseStreamHandler) ProcessBuffer(forceFlush bool) error {
@@ -168,6 +202,13 @@ retry:
 		switch eventType {
 		case "message_start":
 			// ignore, TODO: Read input token count here
+			var messageStart MessageStart
+			err := json.Unmarshal([]byte(dataStr), &messageStart)
+			if err != nil {
+				return fmt.Errorf("failed to unmarshal message start: %v", err)
+			}
+			p2.accumInputTokens += messageStart.Message.Usage.InputTokens
+			p2.accumOutputTokens += messageStart.Message.Usage.OutputTokens
 		case "content_block_start":
 			var contentBlockStart ContentBlockStart
 			err := json.Unmarshal([]byte(dataStr), &contentBlockStart)
@@ -205,6 +246,23 @@ retry:
 			p2.isInsideTextContentBlock = false
 		case "message_stop":
 			// we're done!
+			p2.resChan <- domain.RespChunk{
+				Resp: &BasicAskResponse{
+					Choices: []domain.Choice{},
+					Usage: domain.Usage{
+						PromptTokens:     p2.accumInputTokens,
+						CompletionTokens: p2.accumOutputTokens,
+					},
+				},
+			}
+		case "message_delta":
+			var messageDelta MessageDelta
+			err := json.Unmarshal([]byte(dataStr), &messageDelta)
+			if err != nil {
+				return fmt.Errorf("failed to unmarshal message delta: %v", err)
+			}
+			p2.accumInputTokens += messageDelta.Usage.InputTokens
+			p2.accumOutputTokens += messageDelta.Usage.OutputTokens
 		default:
 			// do nothing, unsupported (by our ai) events
 		}
