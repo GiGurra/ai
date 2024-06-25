@@ -216,7 +216,9 @@ retry:
 				return fmt.Errorf("failed to unmarshal message start: %v", err)
 			}
 			p2.accumInputTokens += messageStart.Message.Usage.InputTokens
-			p2.accumOutputTokens += messageStart.Message.Usage.OutputTokens
+			// apparently we shouldn't count these output tokens, to stay consistent with
+			// anthropic's own token counting (see https://console.anthropic.com/settings/logs)
+			//p2.accumOutputTokens += messageStart.Message.Usage.OutputTokens
 		case "content_block_start":
 			var contentBlockStart ContentBlockStart
 			err := json.Unmarshal([]byte(dataStr), &contentBlockStart)
