@@ -240,8 +240,8 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 		accumOutputTokens := 0
 		isInsideTextContentBlock := false
 
-		parser := sse_parser.NewParser(isValidJsonObject)
-		for msg := range parser.Stream(res.Body, 100) {
+		stream := sse_parser.NewParser(isValidJsonObject).Stream(res.Body, 100)
+		for msg := range stream {
 
 			eventType := strings.TrimSpace(msg.Event)
 			dataStr := msg.Data
