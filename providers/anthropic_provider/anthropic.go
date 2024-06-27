@@ -245,7 +245,7 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 		for msg := range ch {
 
 			eventType := strings.TrimSpace(msg.Event)
-			dataStr := strings.TrimSpace(msg.Data)
+			dataStr := msg.Data
 
 			switch eventType {
 			case "message_start":
