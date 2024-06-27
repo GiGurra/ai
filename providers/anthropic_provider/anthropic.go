@@ -237,6 +237,7 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 	go func() {
 
 		defer close(resChan)
+		defer closeBody()
 
 		accumInputTokens := 0
 		accumOutputTokens := 0
