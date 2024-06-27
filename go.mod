@@ -1,6 +1,6 @@
 module github.com/gigurra/ai
 
-go 1.22.3
+go 1.22.4
 
 require (
 	github.com/GiGurra/boa v0.0.35
@@ -15,6 +15,7 @@ require (
 
 require (
 	github.com/GiGurra/cmder v0.0.2 // indirect
+	github.com/GiGurra/sse-parser v0.0.4 // indirect
 	github.com/bcicen/jstream v1.0.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
