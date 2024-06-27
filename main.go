@@ -227,7 +227,7 @@ func historyCmd() *cobra.Command {
 					fmt.Printf("%s", entry.Message.ToYaml())
 					oneMsgPrinted = true
 				} else {
-					slog.Warn("Unsupported entry type: %s", entry.Type)
+					slog.Warn(fmt.Sprintf("Unsupported entry type: %s", entry.Type))
 				}
 			}
 		},
