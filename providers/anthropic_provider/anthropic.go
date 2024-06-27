@@ -231,9 +231,6 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 		common.FailAndExit(1, fmt.Sprintf("Failed to do request, unexpected status code: %v: %s", res.StatusCode, string(respBody)))
 	}
 
-	parser := sse_parser.NewParser(isValidJsonObject)
-	ch := parser.Stream(res.Body, 100)
-
 	go func() {
 
 		defer close(resChan)
@@ -243,7 +240,8 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 		accumOutputTokens := 0
 		isInsideTextContentBlock := false
 
-		for msg := range ch {
+		parser := sse_parser.NewParser(isValidJsonObject)
+		for msg := range parser.Stream(res.Body, 100) {
 
 			eventType := strings.TrimSpace(msg.Event)
 			dataStr := msg.Data
