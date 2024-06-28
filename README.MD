@@ -235,6 +235,16 @@ google_ai_studio:
   model_id: "gemini-1.5-pro-001"
 ```
 
+For Anthropic
+
+```yaml
+anthropic:
+    api_key: '*****'
+    model_id: claude-3-5-sonnet-20240620
+    version: "2023-06-01"
+    max_output_tokens: 4096
+```
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
