@@ -28,7 +28,8 @@ type HistoryEntry struct {
 
 type State struct {
 	Header
-	History []HistoryEntry `json:"history"`
+	History   []HistoryEntry `json:"history"`
+	StateFile string         `json:"-"`
 }
 
 type Header struct {
@@ -106,10 +107,13 @@ func LoadSession(sessionID string) State {
 		}
 	}
 
-	state, err := util.ReadFaileAsJson[State](sessionDir + "/state.json")
+	stateFile := sessionDir + "/state.json"
+	state, err := util.ReadFaileAsJson[State](stateFile)
 	if err != nil {
 		common.FailAndExit(1, fmt.Sprintf("Failed to read session state: %v", err))
 	}
+
+	state.StateFile = stateFile
 
 	return state
 }

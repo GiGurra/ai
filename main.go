@@ -190,6 +190,7 @@ func statusCmd() *cobra.Command {
 			fmt.Printf("storage dir: %s\n", session.Dir())
 			fmt.Printf("lookup dir: %s\n", session.LookupDir())
 			fmt.Printf("current session: %s (i=%d/%d, o=%d/%d, created %v)\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
+			fmt.Printf("current session file: %s\n", s.StateFile)
 		},
 	}.ToCmd()
 }
