@@ -2,6 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
+	"strconv"
+	"strings"
+
 	"github.com/GiGurra/boa/pkg/boa"
 	"github.com/gigurra/ai/common"
 	"github.com/gigurra/ai/config"
@@ -12,9 +16,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
-	"log/slog"
-	"strconv"
-	"strings"
 )
 
 func main() {
