@@ -212,7 +212,13 @@ func configCmd() *cobra.Command {
 }
 
 func historyCmd() *cobra.Command {
-	p := config.CliSubcParams{}
+
+	type HistoryCmdParams struct {
+		config.CliSubcParams
+		Format boa.Required[string] `name:"format" descr:"Output format. Valid options: pretty or yaml" default:"pretty"`
+	}
+
+	p := HistoryCmdParams{}
 	return boa.Wrap{
 		Use:       "history",
 		Short:     "Prints the conversation history of the current session",
@@ -223,10 +229,17 @@ func historyCmd() *cobra.Command {
 			oneMsgPrinted := false
 			for _, entry := range state.History {
 				if entry.Type == "message" {
-					if oneMsgPrinted {
-						fmt.Printf("---\n")
+					if p.Format.Value() == "pretty" {
+						fmt.Printf("%s:\n", entry.Message.SourceType)
+						fmt.Printf("  %s\n", entry.Message.Content)
+					} else if p.Format.Value() == "yaml" {
+						if oneMsgPrinted {
+							fmt.Printf("---\n")
+						}
+						fmt.Printf("%s", entry.Message.ToYaml())
+					} else {
+						common.FailAndExit(1, fmt.Sprintf("Unsupported format: %s", p.Format.Value()))
 					}
-					fmt.Printf("%s", entry.Message.ToYaml())
 					oneMsgPrinted = true
 				} else {
 					slog.Warn(fmt.Sprintf("Unsupported entry type: %s", entry.Type))
