@@ -230,8 +230,10 @@ func historyCmd() *cobra.Command {
 			for _, entry := range state.History {
 				if entry.Type == "message" {
 					if p.Format.Value() == "pretty" {
-						fmt.Printf("%s:\n", entry.Message.SourceType)
-						fmt.Printf("  %s\n", entry.Message.Content)
+						fmt.Printf("\n----------------------\n")
+						fmt.Printf("|  %s\n", entry.Message.SourceType)
+						fmt.Printf("-------------\n")
+						fmt.Printf("%s\n", entry.Message.Content)
 					} else if p.Format.Value() == "yaml" {
 						if oneMsgPrinted {
 							fmt.Printf("---\n")
