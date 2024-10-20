@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func ReadFaileAsJson[T any](path string) (T, error) {
+func ReadFileAsJson[T any](path string) (T, error) {
 	var zero T
 
 	bytes, err := os.ReadFile(path)

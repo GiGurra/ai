@@ -58,7 +58,7 @@ func ListSessions() []Header {
 		if !dirEntry.IsDir() {
 			continue
 		}
-		header, err := util.ReadFaileAsJson[Header](sessionDir + "/" + dirEntry.Name() + "/header.json")
+		header, err := util.ReadFileAsJson[Header](sessionDir + "/" + dirEntry.Name() + "/header.json")
 		if err != nil {
 			slog.Error(fmt.Sprintf("Failed to read header file: %s, %v", dirEntry.Name(), err))
 			continue
@@ -92,7 +92,7 @@ func StoredSessionExists(sessionID string) bool {
 
 func LoadSession(sessionID string) State {
 	sessionDir := Dir() + "/" + sessionID
-	_, err := util.ReadFaileAsJson[Header](sessionDir + "/header.json")
+	_, err := util.ReadFileAsJson[Header](sessionDir + "/header.json")
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			return State{
@@ -108,7 +108,7 @@ func LoadSession(sessionID string) State {
 	}
 
 	stateFile := sessionDir + "/state.json"
-	state, err := util.ReadFaileAsJson[State](stateFile)
+	state, err := util.ReadFileAsJson[State](stateFile)
 	if err != nil {
 		common.FailAndExit(1, fmt.Sprintf("Failed to read session state: %v", err))
 	}
