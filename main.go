@@ -220,10 +220,12 @@ func historyCmd() *cobra.Command {
 
 	p := HistoryCmdParams{}
 	return boa.Wrap{
-		Use:       "history",
-		Short:     "Prints the conversation history of the current session",
-		ValidArgs: storedSessionIDs(),
-		Params:    &p,
+		Use:   "history",
+		Short: "Prints the conversation history of the current session",
+		ValidArgsFunc: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return storedSessionIDs(), cobra.ShellCompDirectiveDefault
+		},
+		Params: &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			state := session.LoadSession(session.GetSessionID(p.Session.GetOrElse("")))
 			oneMsgPrinted := false
@@ -272,10 +274,12 @@ func setSessionCmd() *cobra.Command {
 		Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 	}
 	return boa.Wrap{
-		Use:       "set",
-		Short:     "Set the ai session",
-		ValidArgs: storedSessionIDs(),
-		Params:    &p,
+		Use:   "set",
+		Short: "Set the ai session",
+		ValidArgsFunc: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return storedSessionIDs(), cobra.ShellCompDirectiveDefault
+		},
+		Params: &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			session.SetSession(p.Session.Value())
 		},
@@ -414,10 +418,12 @@ func deleteSessionCmd() *cobra.Command {
 	}
 
 	return boa.Wrap{
-		Use:       "delete",
-		Short:     "Delete a session, or the current session if no session id is provided",
-		ValidArgs: storedSessionIDs(),
-		Params:    &p,
+		Use:   "delete",
+		Short: "Delete a session, or the current session if no session id is provided",
+		ValidArgsFunc: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return storedSessionIDs(), cobra.ShellCompDirectiveDefault
+		},
+		Params: &p,
 		Run: func(cmd *cobra.Command, args []string) {
 			session.DeleteSession(p.Session.GetOrElse(""), p.Yes.Value())
 		},
