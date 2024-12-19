@@ -328,8 +328,9 @@ func copyCmd() *cobra.Command {
 
 func nameAll() *cobra.Command {
 	var p struct {
-		Verbose boa.Required[bool] `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
-		Yes     boa.Required[bool] `descr:"Verbose output" short:"y" default:"false" name:"yes"`
+		Verbose  boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
+		Yes      boa.Required[bool]   `descr:"Verbose output" short:"y" default:"false" name:"yes"`
+		Provider boa.Optional[string] `descr:"AI provider to use" name:"provider" env:"AI_PROVIDER" short:"p"`
 	}
 	return boa.Wrap{
 		Use:    "name-all",
@@ -339,7 +340,7 @@ func nameAll() *cobra.Command {
 			sessions := session.ListSessions()
 
 			cfgFilePath, storedCfg := config.LoadCfgFile()
-			cfg := config.ValidateCfg(cfgFilePath, storedCfg, config.CliParams{})
+			cfg := config.ValidateCfg(cfgFilePath, storedCfg, config.CliParams{Provider: p.Provider})
 			provider := providers.CreateProvider(cfg)
 
 			sessionsToRename := lo.Filter(sessions, func(s session.Header, _ int) bool {
