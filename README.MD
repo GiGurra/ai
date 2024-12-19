@@ -240,7 +240,7 @@ For Anthropic
 ```yaml
 anthropic:
     api_key: "your-api-key"
-    model_id: claude-3-5-sonnet-20240620
+    model_id: claude-3-5-sonnet-20241022
     version: "2023-06-01"
     max_output_tokens: 4096
 ```

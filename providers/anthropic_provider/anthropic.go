@@ -346,8 +346,8 @@ func NewAnthropicProvider(cfg Config, verbose bool) *Provider {
 }
 
 func (o Provider) ListModels() ([]string, error) {
-	slog.Warn("ListModels not implemented. Returning hardcoded model list with only claude-3-5-sonnet-20240620")
-	return []string{"claude-3-5-sonnet-20240620"}, nil
+	slog.Warn("ListModels not implemented. Returning hardcoded model list with only claude-3-5-sonnet-20241022")
+	return []string{"claude-3-5-sonnet-20241022"}, nil
 }
 
 func isValidJsonObject(str string) bool {
