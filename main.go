@@ -185,8 +185,9 @@ func statusCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			_, cfgInFile := config.LoadCfgFile()
 			s := session.LoadSession(session.GetSessionID(p.Session.GetOrElse("")))
-			fmt.Printf("current provider: %s\n", cfgInFile.Provider)
-			fmt.Printf("current model: %s\n", cfgInFile.Model())
+			provider := p.Provider.GetOrElse(cfgInFile.Provider)
+			fmt.Printf("current provider: %s\n", provider)
+			fmt.Printf("current model: %s\n", cfgInFile.Model(provider))
 			fmt.Printf("config file: %s\n", config.CfgFilePath())
 			fmt.Printf("storage dir: %s\n", session.Dir())
 			fmt.Printf("lookup dir: %s\n", session.LookupDir())

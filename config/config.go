@@ -32,8 +32,9 @@ type CliParams struct {
 }
 
 type CliSubcParams struct {
-	Session boa.Optional[string] `descr:"Session id" positional:"true" env:"CURRENT_AI_SESSION" name:"session"`
-	Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
+	Session  boa.Optional[string] `descr:"Session id" positional:"true" env:"CURRENT_AI_SESSION" name:"session"`
+	Verbose  boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
+	Provider boa.Optional[string] `descr:"AI provider to use" name:"provider" env:"AI_PROVIDER" short:"p"`
 }
 
 func (c CliSubcParams) ToCliParams() CliParams {
@@ -51,8 +52,11 @@ type StoredConfig struct {
 	Anthropic      anthropic_provider.Config        `yaml:"anthropic"`
 }
 
-func (s StoredConfig) Model() string {
-	switch s.Provider {
+func (s StoredConfig) Model(provider string) string {
+	if provider == "" {
+		provider = s.Provider
+	}
+	switch provider {
 	case "openai":
 		return s.OpenAI.Model
 	case "google-cloud":
