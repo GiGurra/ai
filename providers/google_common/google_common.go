@@ -180,9 +180,16 @@ func BasicAskStream(
 				panic(fmt.Sprintf("No candidates in response"))
 			}
 			firstCandidate := content.Candidates[0]
-			//if firstCandidate.FinishReason != "" {
-			//	return
-			//}
+
+			Usage := domain.Usage{}
+			if firstCandidate.FinishReason == "STOP" {
+				Usage = domain.Usage{
+					PromptTokens:     content.UsageMetadata.PromptTokenCount,
+					CompletionTokens: content.UsageMetadata.CandidatesTokenCount,
+					TotalTokens:      content.UsageMetadata.TotalTokenCount,
+				}
+			}
+
 			respChan <- domain.RespChunk{
 				Resp: &RespImpl{
 					Choices: []domain.Choice{
@@ -194,11 +201,7 @@ func BasicAskStream(
 							},
 						},
 					},
-					Usage: domain.Usage{
-						PromptTokens:     content.UsageMetadata.PromptTokenCount,
-						CompletionTokens: content.UsageMetadata.CandidatesTokenCount,
-						TotalTokens:      content.UsageMetadata.TotalTokenCount,
-					},
+					Usage: Usage,
 				},
 			}
 		}
