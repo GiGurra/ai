@@ -248,6 +248,9 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 		decoder := jstream.NewDecoder(res.Body, 1)
 		for mv := range decoder.Stream() {
 			jsonRepr, _ := json.Marshal(mv.Value)
+			if o.cfg.Verbose {
+				slog.Info(fmt.Sprintf("[[RESPONSE DATA CHUNK]]: %s", string(jsonRepr)))
+			}
 			// read back as Content struct
 			var content ContentResponse
 			err := json.Unmarshal(jsonRepr, &content)
@@ -271,6 +274,11 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 								Content:    firstCandidate.Content.Parts[0].Text,
 							},
 						},
+					},
+					Usage: domain.Usage{
+						PromptTokens:     content.UsageMetadata.PromptTokenCount,
+						CompletionTokens: content.UsageMetadata.CandidatesTokenCount,
+						TotalTokens:      content.UsageMetadata.TotalTokenCount,
 					},
 				},
 			}
