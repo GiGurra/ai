@@ -173,7 +173,9 @@ func ValidateCfg(
 		cfg.Verbose = true
 	}
 
-	switch strings.TrimSpace(cfg.Provider) {
+	providerName := strings.ReplaceAll(strings.TrimSpace(cfg.Provider), "_", "-")
+
+	switch providerName {
 	case "":
 		common.FailAndExit(1, "No provider found in config file: "+configFilePath)
 	case "openai":
@@ -223,7 +225,7 @@ func ValidateCfg(
 			common.FailAndExit(1, "No anthropic api key found in config file: "+configFilePath)
 		}
 	default:
-		common.FailAndExit(1, fmt.Sprintf("Unsupported provider: %s", cfg.Provider))
+		common.FailAndExit(1, fmt.Sprintf("Unsupported provider: %s", providerName))
 	}
 
 	return cfg

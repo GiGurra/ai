@@ -9,10 +9,14 @@ import (
 	"github.com/gigurra/ai/providers/google_ai_studio_provider"
 	"github.com/gigurra/ai/providers/google_cloud_provider"
 	"github.com/gigurra/ai/providers/openai_provider"
+	"strings"
 )
 
 func CreateProvider(cfg config.Config) domain.Provider {
-	switch cfg.Provider {
+
+	providerName := strings.ReplaceAll(strings.TrimSpace(cfg.Provider), "_", "-")
+
+	switch providerName {
 	case "openai":
 		return openai_provider.NewOpenAIProvider(cfg.OpenAI, cfg.Verbose)
 	case "google-cloud":
@@ -22,7 +26,7 @@ func CreateProvider(cfg config.Config) domain.Provider {
 	case "anthropic":
 		return anthropic_provider.NewAnthropicProvider(cfg.Anthropic, cfg.Verbose)
 	default:
-		common.FailAndExit(1, fmt.Sprintf("Unsupported provider: %s", cfg.Provider))
+		common.FailAndExit(1, fmt.Sprintf("Unsupported provider: %s", providerName))
 		return nil // needed to compile :S
 	}
 }
