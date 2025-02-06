@@ -77,6 +77,7 @@ type Config struct {
 
 func (c Config) WithoutSecrets() Config {
 	c.OpenAI.APIKey = "*****"
+	c.GoogleCloud.ProjectID = "*****"
 	c.GoogleAiStudio.APIKey = "*****"
 	c.Anthropic.APIKey = "*****"
 	return c
