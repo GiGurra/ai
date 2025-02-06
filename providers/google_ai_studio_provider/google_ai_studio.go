@@ -15,8 +15,18 @@ import (
 )
 
 type Config struct {
-	APIKey  string `yaml:"api_key"`
-	ModelId string `yaml:"model_id"`
+	APIKey          string  `yaml:"api_key"`
+	ModelId         string  `yaml:"model_id"`
+	MaxOutputTokens int     `yaml:"max_output_tokens"`
+	Temperature     float64 `yaml:"temperature"`
+	TopP            float64 `yaml:"top_p"`
+	TopK            float64 `yaml:"top_k"`
+	Verbose         bool    `yaml:"verbose"`
+}
+
+func (c Config) WithVerbose(verbose bool) Config {
+	c.Verbose = verbose
+	return c
 }
 
 type Provider struct {
@@ -266,9 +276,9 @@ func (r *RespImpl) GetUsage() domain.Usage {
 // prove that OpenAIProvider implements the Provider interface
 var _ domain.Provider = &Provider{}
 
-func NewGoogleAiStudioProvider(cfg Config, _ bool) *Provider {
+func NewGoogleAiStudioProvider(cfg Config, verbose bool) *Provider {
 	return &Provider{
-		cfg: cfg,
+		cfg: cfg.WithVerbose(verbose),
 	}
 }
 
