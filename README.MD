@@ -9,7 +9,9 @@ So far the following AI providers are supported:
 
 * OpenAI
 * Anthropic
-* Google Cloud Vertex AI (experimental, no token count supported)
+* Google Cloud Vertex AI (gemini2 etc)
+
+Started implementing, but not finished:
 * Google AI Studio (untested)
 
 ## WARNING
