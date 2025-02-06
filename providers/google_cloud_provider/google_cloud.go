@@ -18,9 +18,19 @@ import (
 )
 
 type Config struct {
-	ProjectID  string `yaml:"project_id"`
-	LocationID string `yaml:"location_id"`
-	ModelId    string `yaml:"model_id"`
+	ProjectID       string  `yaml:"project_id"`
+	LocationID      string  `yaml:"location_id"`
+	ModelId         string  `yaml:"model_id"`
+	MaxOutputTokens int     `yaml:"max_output_tokens"`
+	Temperature     float64 `yaml:"temperature"`
+	TopP            float64 `yaml:"top_p"`
+	TopK            float64 `yaml:"top_k"`
+	Verbose         bool    `yaml:"verbose"`
+}
+
+func (c Config) WithVerbose(verbose bool) Config {
+	c.Verbose = verbose
+	return c
 }
 
 type Provider struct {
@@ -32,6 +42,7 @@ type GenerationConfig struct {
 	MaxOutputTokens int     `json:"maxOutputTokens"`
 	Temperature     float64 `json:"temperature"`
 	TopP            float64 `json:"topP"`
+	TopK            float64 `json:"topK"`
 }
 
 type SafetySetting struct {
@@ -130,6 +141,20 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 	}, nil
 }
 
+func cfgOrDefaultF(cfgVal float64, defaultVal float64) float64 {
+	if cfgVal > 0 {
+		return cfgVal
+	}
+	return defaultVal
+}
+
+func cfgOrDefaultI(cfgVal int, defaultVal int) int {
+	if cfgVal != 0 {
+		return cfgVal
+	}
+	return defaultVal
+}
+
 func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChunk {
 
 	respChan := make(chan domain.RespChunk)
@@ -146,9 +171,10 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 				}
 			}),
 			GenerationConfig: &GenerationConfig{
-				MaxOutputTokens: 8192,
-				Temperature:     1,
-				TopP:            0.95,
+				MaxOutputTokens: cfgOrDefaultI(o.cfg.MaxOutputTokens, 8192),
+				Temperature:     cfgOrDefaultF(o.cfg.Temperature, 0.1),
+				TopP:            cfgOrDefaultF(o.cfg.TopP, 1.0),
+				TopK:            cfgOrDefaultF(o.cfg.TopK, 40.0),
 			},
 			//SafetySettings: []SafetySetting{
 			//	{
@@ -168,6 +194,10 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 			//		Threshold: "BLOCK_MEDIUM_AND_ABOVE",
 			//	},
 			//},
+		}
+
+		if o.cfg.Verbose {
+			slog.Info(fmt.Sprintf("GenerationConfig: %+v", bodyT.GenerationConfig))
 		}
 
 		bodyBytes, err := json.Marshal(bodyT)
@@ -266,14 +296,14 @@ func (r *RespImpl) GetUsage() domain.Usage {
 // prove that OpenAIProvider implements the Provider interface
 var _ domain.Provider = &Provider{}
 
-func NewGoogleCloudProvider(cfg Config, _ bool) *Provider {
+func NewGoogleCloudProvider(cfg Config, Verbose bool) *Provider {
 	// get access token. TODO: Use a library instead to lower the dependency on gcloud and latencies
 	res := cmder.New("gcloud", "auth", "print-access-token").Run(context.Background())
 	if res.Err != nil {
 		common.FailAndExit(1, "Failed to get access token with gcloud. Check if you are logged in.")
 	}
 	return &Provider{
-		cfg:         cfg,
+		cfg:         cfg.WithVerbose(Verbose),
 		accessToken: strings.TrimSpace(res.StdOut),
 	}
 }
@@ -281,7 +311,9 @@ func NewGoogleCloudProvider(cfg Config, _ bool) *Provider {
 func (o Provider) ListModels() ([]string, error) {
 	return []string{
 		"gemini-1.5-flash-001",
+		"gemini-1.5-flash-002",
 		"gemini-1.5-pro-001",
 		"gemini-experimental",
+		"gemini-2.0-flash-001",
 	}, nil
 }
