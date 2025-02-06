@@ -91,6 +91,9 @@ func main() {
 			for {
 				res, hasMore := <-stream
 				if !hasMore {
+					if len(accum.String()) == 0 {
+						common.FailAndExit(1, "No response handled from ai provider")
+					}
 					break // stream done
 				}
 				if res.Err != nil {

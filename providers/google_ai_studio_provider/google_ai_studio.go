@@ -58,7 +58,7 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChunk {
 
 	endpointUrl, err := url.Parse(fmt.Sprintf(
-		"https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent",
+		"https://generativelanguage.googleapis.com/v1beta/models/%s:streamGenerateContent",
 		o.cfg.ModelId,
 	))
 	if err != nil {
@@ -66,7 +66,6 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 	}
 
 	q := endpointUrl.Query()
-	q.Set("alt", "sse")
 	q.Set("key", o.cfg.APIKey)
 	endpointUrl.RawQuery = q.Encode()
 

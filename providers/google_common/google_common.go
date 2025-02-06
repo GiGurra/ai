@@ -164,8 +164,6 @@ func BasicAskStream(
 			panic(fmt.Sprintf("Failed to do request, unexpected status code: %v: %s", res.StatusCode, string(respBody)))
 		}
 
-		// print response body to stdout
-
 		decoder := jstream.NewDecoder(res.Body, 1)
 		for mv := range decoder.Stream() {
 			jsonRepr, _ := json.Marshal(mv.Value)
@@ -204,8 +202,8 @@ func BasicAskStream(
 				},
 			}
 		}
-
 	}()
+
 	return respChan
 }
 
