@@ -87,7 +87,6 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 	return google_common.BasicAskStream(
 		endpointUrl,
 		authHeader,
-		nil,
 		cfg,
 		question,
 	)

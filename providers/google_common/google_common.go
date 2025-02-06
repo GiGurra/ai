@@ -78,7 +78,6 @@ type Candidate struct {
 func BasicAskStream(
 	endpointUrl *url.URL,
 	authHeader string,
-	queryParams url.Values,
 	cfg *Config,
 	question domain.Question,
 ) <-chan domain.RespChunk {
@@ -147,7 +146,6 @@ func BasicAskStream(
 			ContentLength: int64(len(bodyBytes)),
 			Host:          endpointUrl.Host,
 		}
-		request.URL.RawQuery = queryParams.Encode()
 
 		res, err := http.DefaultClient.Do(&request)
 		if err != nil {

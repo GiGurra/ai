@@ -65,6 +65,11 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 		common.FailAndExit(1, fmt.Sprintf("failed to parse URL: %v", err))
 	}
 
+	q := endpointUrl.Query()
+	q.Set("alt", "sse")
+	q.Set("key", o.cfg.APIKey)
+	endpointUrl.RawQuery = q.Encode()
+
 	cfg := &google_common.Config{
 		ModelId:         o.cfg.ModelId,
 		MaxOutputTokens: o.cfg.MaxOutputTokens,
@@ -74,12 +79,9 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 		Verbose:         o.cfg.Verbose,
 	}
 
-	queryParams := url.Values{"key": {o.cfg.APIKey}}
-
 	return google_common.BasicAskStream(
 		endpointUrl,
 		"",
-		queryParams,
 		cfg,
 		question,
 	)
