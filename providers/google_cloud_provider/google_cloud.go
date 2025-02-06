@@ -228,9 +228,9 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 				panic(fmt.Sprintf("No candidates in response"))
 			}
 			firstCandidate := content.Candidates[0]
-			if firstCandidate.FinishReason != "" {
-				return
-			}
+			//if firstCandidate.FinishReason != "" {
+			//	return
+			//}
 			respChan <- domain.RespChunk{
 				Resp: &RespImpl{
 					Choices: []domain.Choice{
