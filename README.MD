@@ -9,10 +9,8 @@ So far the following AI providers are supported:
 
 * OpenAI
 * Anthropic
-* Google Cloud Vertex AI (gemini2 etc)
-
-Started implementing, but not finished:
-* Google AI Studio (untested)
+* Google AI Studio
+* Google Cloud Vertex AI (requires `gcloud` to be installed and authenticated)
 
 ## WARNING
 
@@ -238,7 +236,11 @@ For Google AI Studio
 provider: google-ai-studio
 google_ai_studio:
   api_key: "your-api-key"
-  model_id: "gemini-1.5-pro-001"
+  model_id: gemini-2.0-flash-001
+  max_output_tokens: 8192
+  temperature: 0.25
+  top_p: 1
+  top_k: 40
 ```
 
 For Anthropic
