@@ -24,3 +24,17 @@ func AppDir() string {
 
 	return dir
 }
+
+func CfgOrDefaultF(cfgVal float64, defaultVal float64) float64 {
+	if cfgVal > 0 {
+		return cfgVal
+	}
+	return defaultVal
+}
+
+func CfgOrDefaultI(cfgVal int, defaultVal int) int {
+	if cfgVal != 0 {
+		return cfgVal
+	}
+	return defaultVal
+}
