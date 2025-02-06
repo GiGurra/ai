@@ -224,8 +224,12 @@ to `gcloud auth print-access-token` - a mechanism I will probably replace in the
 provider: google-cloud
 google-cloud:
   project_id: "my-project-1"
-  location_id: "europe-west4"
-  model_id: "gemini-1.5-pro-001"
+  location_id: "europe-west4" 
+  model_id: gemini-2.0-flash-001
+  max_output_tokens: 8192
+  temperature: 0.25
+  top_p: 1
+  top_k: 40
 ```
 
 For Google AI Studio
