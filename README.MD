@@ -181,7 +181,7 @@ drwxr-xr-x@ 21 johankjolhede  staff   672B 18 Okt  2023 google-cloud-sdk.bak
 
 ### Using together with [aicat](https://github.com/gigurra/aicat)
 
-You can use this tool together with cat or aicat to analyze a set of file.
+You can use this tool together with cat or aicat to analyze a set of files.
 
 - **Analyze a code base**:
     ```sh
