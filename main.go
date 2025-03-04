@@ -189,6 +189,7 @@ func statusCmd() *cobra.Command {
 			_, cfgInFile := config.LoadCfgFile()
 			s := session.LoadSession(session.GetSessionID(p.Session.GetOrElse("")))
 			provider := p.Provider.GetOrElse(cfgInFile.Provider)
+			provider = strings.ReplaceAll(strings.TrimSpace(provider), "_", "-")
 			fmt.Printf("current provider: %s\n", provider)
 			fmt.Printf("current model: %s\n", cfgInFile.Model(provider))
 			fmt.Printf("config file: %s\n", config.CfgFilePath())
