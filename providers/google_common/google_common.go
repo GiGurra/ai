@@ -190,6 +190,13 @@ func BasicAskStream(
 				}
 			}
 
+			text := func() string {
+				if len(firstCandidate.Content.Parts) > 0 {
+					return firstCandidate.Content.Parts[0].Text
+				}
+				return ""
+			}()
+
 			respChan <- domain.RespChunk{
 				Resp: &RespImpl{
 					Choices: []domain.Choice{
@@ -197,7 +204,7 @@ func BasicAskStream(
 							Index: 0,
 							Message: domain.Message{
 								SourceType: GoogleToDomainRole(firstCandidate.Content.Role),
-								Content:    firstCandidate.Content.Parts[0].Text,
+								Content:    text,
 							},
 						},
 					},
