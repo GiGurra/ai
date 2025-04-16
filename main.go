@@ -538,6 +538,16 @@ func pushCmd() *cobra.Command {
 				common.FailAndExit(res.ExitCode, fmt.Sprintf("Failed to run git status on sessions dir:\n- %v", res.Combined))
 			}
 
+			// Check if we have any changes to commit, with git porcelain
+			res = cmder.New("git", "status", "--porcelain").WithWorkingDirectory(sessionsDir).Run(context.Background())
+			if res.Err != nil {
+				common.FailAndExit(res.ExitCode, fmt.Sprintf("Failed to run git status on sessions dir:\n- %v", res.Combined))
+			}
+			if len(res.Combined) == 0 {
+				fmt.Printf("No changes to commit, exiting\n")
+				return
+			}
+
 			fmt.Printf("Will first pull latest from git remote -> %s\n", sessionsDir)
 			res = cmder.New("git", "pull").WithWorkingDirectory(sessionsDir).Run(context.Background())
 			if res.Err != nil {
