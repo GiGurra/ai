@@ -522,7 +522,7 @@ func pushCmd() *cobra.Command {
 		Verbose boa.Required[bool] `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 	}
 	return boa.Wrap{
-		Use:    "pull",
+		Use:    "push",
 		Short:  "Push the latest conversation sessions/session updates to git remote",
 		Params: &p,
 		Args:   cobra.MinimumNArgs(0),
