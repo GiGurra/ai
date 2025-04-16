@@ -56,7 +56,10 @@ func ListSessions() []Header {
 	var headers []Header
 	for _, dirEntry := range dirEntries {
 		if !dirEntry.IsDir() {
-			continue
+			continue // ignore files
+		}
+		if dirEntry.Name() == ".git" {
+			continue // ignore .git dirs
 		}
 		header, err := util.ReadFileAsJson[Header](sessionDir + "/" + dirEntry.Name() + "/header.json")
 		if err != nil {
