@@ -37,8 +37,8 @@ type CliSubcParams struct {
 	Provider boa.Optional[string] `descr:"AI provider to use" name:"provider" env:"AI_PROVIDER" short:"p"`
 }
 
-func (c CliSubcParams) ToCliParams() CliParams {
-	return CliParams{
+func (c *CliSubcParams) ToCliParams() *CliParams {
+	return &CliParams{
 		Session: c.Session,
 		Verbose: c.Verbose,
 	}
@@ -162,7 +162,7 @@ func LoadCfgFile() (string, Config) {
 func ValidateCfg(
 	configFilePath string,
 	cfg Config,
-	p CliParams,
+	p *CliParams,
 ) Config {
 
 	if p.Provider.HasValue() {
