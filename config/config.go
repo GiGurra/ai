@@ -9,7 +9,7 @@ import (
 	"github.com/gigurra/ai/providers/google_ai_studio_provider"
 	"github.com/gigurra/ai/providers/google_cloud_provider"
 	"github.com/gigurra/ai/providers/openai_provider"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 	"gopkg.in/yaml.v3"
 	"io/fs"
 	"os"
@@ -115,7 +115,7 @@ func LoadCfgFile() (string, Config) {
 			openaiApiKey := ""
 			if strings.HasPrefix(strings.ToLower(input), "y") {
 				fmt.Printf("Please enter your OpenAI API key (first time only): ")
-				bytePassword, err := terminal.ReadPassword(int(os.Stdin.Fd()))
+				bytePassword, err := term.ReadPassword(int(os.Stdin.Fd()))
 				if err != nil {
 					common.FailAndExit(1, fmt.Sprintf("Failed to read input: %v", err))
 				}

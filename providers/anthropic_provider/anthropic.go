@@ -98,14 +98,6 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 	}, nil
 }
 
-type ResponseStreamHandler struct {
-	resChan                  chan domain.RespChunk
-	parser                   sse_parser.Parser
-	isInsideTextContentBlock bool
-	accumInputTokens         int
-	accumOutputTokens        int
-}
-
 type ContentBlock struct {
 	Type string `json:"type"`
 	Text string `json:"text"`
@@ -296,7 +288,7 @@ func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChu
 						},
 					}
 				} else {
-					//slog.Info(fmt.Sprintf("Ignoring content block delta: %s", dataStr))
+					slog.Debug(fmt.Sprintf("Ignoring content block delta: %s", dataStr))
 					// ignore, we're not inside a content block
 				}
 			case "content_block_stop":

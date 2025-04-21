@@ -177,7 +177,7 @@ func BasicAskStream(
 				panic(fmt.Sprintf("Failed to unmarshal response: %v", err))
 			}
 			if len(content.Candidates) == 0 {
-				panic(fmt.Sprintf("No candidates in response"))
+				panic("No candidates in response")
 			}
 			firstCandidate := content.Candidates[0]
 
