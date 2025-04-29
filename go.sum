@@ -1,5 +1,5 @@
-github.com/GiGurra/boa v0.1.4 h1:WPZykzEXpghgBHQxjnoKC+juzwtQCK6bvJ0Y4+XpH98=
-github.com/GiGurra/boa v0.1.4/go.mod h1:gLDIPnA094Kys2QdyK20LtNgIxg8FvZbGyC7VludKos=
+github.com/GiGurra/boa v0.1.16 h1:yLRCsydTWyp+QFsEfqXHVZ7wOX2k12rBAHy7eaUNNk0=
+github.com/GiGurra/boa v0.1.16/go.mod h1:2v+A6CEAzQduK4qmkXEU0waRFE19CCFLbVeOJkwPtug=
 github.com/GiGurra/cmder v0.0.2 h1:HwxmOXrGsYB+Z7/Msw9uk7gQqjEyIE4tr2qz1KWCYf8=
 github.com/GiGurra/cmder v0.0.2/go.mod h1:rM1UyXHxD7GV1YqWtqISyUBMSLNle49sMUvaUkMyLDI=
 github.com/GiGurra/sse-parser v0.0.5 h1:GkqmrTxjMmYpeAasnOlQuXbpLTEB2Awo85iuoDPLJMM=
@@ -22,10 +22,10 @@ github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLA
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
-github.com/samber/lo v1.49.1 h1:4BIFyVfuQSEpluc7Fua+j1NolZHiEHEpaSEKdsH0tew=
-github.com/samber/lo v1.49.1/go.mod h1:dO6KHFzUKXgP8LDhU0oI8d2hekjXnGOu0DB8Jecxd6o=
-github.com/sashabaranov/go-openai v1.38.2 h1:akrssjj+6DY3lWuDwHv6cBvJ8Z+FZDM9XEaaYFt0Auo=
-github.com/sashabaranov/go-openai v1.38.2/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
+github.com/samber/lo v1.50.0 h1:XrG0xOeHs+4FQ8gJR97zDz5uOFMW7OwFWiFVzqopKgY=
+github.com/samber/lo v1.50.0/go.mod h1:RjZyNk6WSnUFRKK6EyOhsRJMqft3G+pg7dCWHQCWvsc=
+github.com/sashabaranov/go-openai v1.39.0 h1:7Ubg/9njZlBJ8qFs6q5gExpfkAhy3E9VN3pciG7H6pY=
+github.com/sashabaranov/go-openai v1.39.0/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
 github.com/spf13/cobra v1.9.1 h1:CXSaggrXdbHK9CF+8ywj8Amf7PBRmPCOJugH954Nnlo=
 github.com/spf13/cobra v1.9.1/go.mod h1:nDyEzZ8ogv936Cinf6g1RU9MRY64Ir93oCnqb9wxYW0=
 github.com/spf13/pflag v1.0.6 h1:jFzHGLGAlb3ruxLB8MhbI6A8+AQX/2eW4qeyNZXNp2o=
