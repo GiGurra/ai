@@ -11,12 +11,12 @@ func NewOrResetCmd(name string) *cobra.Command {
 		Session boa.Optional[string] `descr:"Session id" positional:"true" name:"session"`
 		Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 	}
-	return boa.Wrap{
+	return boa.Cmd{
 		Use:    name,
 		Short:  "Create a new session",
 		Params: &p,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunFunc: func(cmd *cobra.Command, args []string) {
 			session.NewSession(p.Session.GetOrElse(""))
 		},
-	}.ToCmd()
+	}.ToCobra()
 }

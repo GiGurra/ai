@@ -15,12 +15,12 @@ func Prep() *cobra.Command {
 	var p struct {
 		Verbose boa.Required[bool] `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 	}
-	return boa.Wrap{
+	return boa.Cmd{
 		Use:    "prep",
 		Short:  "Add a user message to the current session without sending a question",
 		Params: &p,
 		Args:   cobra.MinimumNArgs(0),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunFunc: func(cmd *cobra.Command, args []string) {
 			question := strings.Join(args, " ")
 
 			stdInAttachment, err := util.ReadAllStdIn()
@@ -53,5 +53,5 @@ func Prep() *cobra.Command {
 				fmt.Printf("Added message to session %s: %s\n", state.SessionID, question)
 			}
 		},
-	}.ToCmd()
+	}.ToCobra()
 }

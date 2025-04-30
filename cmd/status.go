@@ -11,11 +11,11 @@ import (
 
 func Status() *cobra.Command {
 	p := config.CliSubcParams{}
-	return boa.Wrap{
+	return boa.Cmd{
 		Use:    "status",
 		Short:  "Prints info about current session",
 		Params: &p,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunFunc: func(cmd *cobra.Command, args []string) {
 			_, cfgInFile := config.LoadCfgFile()
 			s := session.LoadSession(session.GetSessionID(p.Session.GetOrElse("")))
 			provider := p.Provider.GetOrElse(cfgInFile.Provider)
@@ -28,5 +28,5 @@ func Status() *cobra.Command {
 			fmt.Printf("current session: %s (i=%d/%d, o=%d/%d, created %v)\n", s.SessionID, s.InputTokens, s.InputTokensAccum, s.OutputTokens, s.OutputTokensAccum, s.CreatedAt.Format("2006-01-02 15:04:05"))
 			fmt.Printf("current session file: %s\n", s.StateFile)
 		},
-	}.ToCmd()
+	}.ToCobra()
 }

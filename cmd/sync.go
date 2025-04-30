@@ -15,12 +15,12 @@ func Sync() *cobra.Command {
 	var p struct {
 		Verbose boa.Required[bool] `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 	}
-	return boa.Wrap{
+	return boa.Cmd{
 		Use:    "sync",
 		Short:  "sync the latest conversation sessions/session updates to/from git remote",
 		Params: &p,
 		Args:   cobra.MinimumNArgs(0),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunFunc: func(cmd *cobra.Command, args []string) {
 
 			sessionsDir := session.Dir()
 
@@ -72,5 +72,5 @@ func Sync() *cobra.Command {
 
 			fmt.Printf("- %s", res.Combined)
 		},
-	}.ToCmd()
+	}.ToCobra()
 }

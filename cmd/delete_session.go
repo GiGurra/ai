@@ -13,15 +13,15 @@ func Delete() *cobra.Command {
 		Yes     boa.Required[bool]   `descr:"Auto confirm" short:"y" default:"false" name:"yes"`
 	}
 
-	return boa.Wrap{
+	return boa.Cmd{
 		Use:   "delete",
 		Short: "Delete a session, or the current session if no session id is provided",
 		ValidArgsFunc: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return storedSessionIDs(), cobra.ShellCompDirectiveDefault
 		},
 		Params: &p,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunFunc: func(cmd *cobra.Command, args []string) {
 			session.DeleteSession(p.Session.GetOrElse(""), p.Yes.Value())
 		},
-	}.ToCmd()
+	}.ToCobra()
 }

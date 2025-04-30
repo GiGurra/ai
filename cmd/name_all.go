@@ -20,11 +20,11 @@ func NameAll() *cobra.Command {
 		Yes      boa.Required[bool]   `descr:"Verbose output" short:"y" default:"false" name:"yes"`
 		Provider boa.Optional[string] `descr:"AI provider to use" name:"provider" env:"AI_PROVIDER" short:"p"`
 	}
-	return boa.Wrap{
+	return boa.Cmd{
 		Use:    "name-all",
 		Short:  "generate names to replace UUID session IDs",
 		Params: &p,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunFunc: func(cmd *cobra.Command, args []string) {
 			sessions := session.ListSessions()
 
 			cfgFilePath, storedCfg := config.LoadCfgFile()
@@ -96,5 +96,5 @@ func NameAll() *cobra.Command {
 			}
 
 		},
-	}.ToCmd()
+	}.ToCobra()
 }

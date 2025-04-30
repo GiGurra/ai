@@ -18,14 +18,14 @@ func History() *cobra.Command {
 	}
 
 	p := HistoryCmdParams{}
-	return boa.Wrap{
+	return boa.Cmd{
 		Use:   "history",
 		Short: "Prints the conversation history of the current session",
 		ValidArgsFunc: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return storedSessionIDs(), cobra.ShellCompDirectiveDefault
 		},
 		Params: &p,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunFunc: func(cmd *cobra.Command, args []string) {
 			state := session.LoadSession(session.GetSessionID(p.Session.GetOrElse("")))
 			oneMsgPrinted := false
 			for _, entry := range state.History {
@@ -49,5 +49,5 @@ func History() *cobra.Command {
 				}
 			}
 		},
-	}.ToCmd()
+	}.ToCobra()
 }

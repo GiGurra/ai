@@ -10,11 +10,11 @@ import (
 
 func Session() *cobra.Command {
 	p := config.CliSubcParams{}
-	return boa.Wrap{
+	return boa.Cmd{
 		Use:    "session",
 		Short:  "Print id of current session",
 		Params: &p,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunFunc: func(cmd *cobra.Command, args []string) {
 			sessionId := session.GetSessionID(p.Session.GetOrElse(""))
 			if p.Verbose.Value() {
 				s := session.LoadSession(sessionId)
@@ -23,5 +23,5 @@ func Session() *cobra.Command {
 				fmt.Printf("%s\n", sessionId)
 			}
 		},
-	}.ToCmd()
+	}.ToCobra()
 }

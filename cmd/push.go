@@ -15,12 +15,12 @@ func Push() *cobra.Command {
 	var p struct {
 		Verbose boa.Required[bool] `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 	}
-	return boa.Wrap{
+	return boa.Cmd{
 		Use:    "push",
 		Short:  "Push the latest conversation sessions/session updates to git remote",
 		Params: &p,
 		Args:   cobra.MinimumNArgs(0),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunFunc: func(cmd *cobra.Command, args []string) {
 
 			sessionsDir := session.Dir()
 			fmt.Printf("Pushing latest sessions %s -> git remote\n", sessionsDir)
@@ -70,5 +70,5 @@ func Push() *cobra.Command {
 
 			fmt.Printf("- %s", res.Combined)
 		},
-	}.ToCmd()
+	}.ToCobra()
 }

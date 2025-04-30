@@ -11,7 +11,7 @@ func main() {
 
 	cliParams := &config.CliParams{}
 
-	boa.Wrap{
+	boa.Cmd{
 		Use:         "ai",
 		Short:       "ai/llm conversation tool, every terminal is a conversation",
 		ParamEnrich: config.CliParamEnricher,
@@ -36,6 +36,6 @@ func main() {
 			cmd.Push(),
 			cmd.Sync(),
 		},
-		Run: cmd.Default(cliParams),
-	}.ToApp()
+		RunFunc: cmd.Default(cliParams),
+	}.Run()
 }

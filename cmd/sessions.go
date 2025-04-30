@@ -10,12 +10,12 @@ import (
 
 func Sessions() *cobra.Command {
 	p := config.CliSubcParams{}
-	return boa.Wrap{
+	return boa.Cmd{
 		Use:         "sessions",
 		Short:       "List all stored sessions",
 		Params:      &p,
 		ParamEnrich: config.CliParamEnricher,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunFunc: func(cmd *cobra.Command, args []string) {
 			sessions := session.ListSessions()
 			currentSession := session.GetSessionID(p.Session.GetOrElse(""))
 			if p.Verbose.Value() {
@@ -37,5 +37,5 @@ func Sessions() *cobra.Command {
 			}
 
 		},
-	}.ToCmd()
+	}.ToCobra()
 }

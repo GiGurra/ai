@@ -12,16 +12,16 @@ func Rename() *cobra.Command {
 		Arg2    boa.Optional[string] `descr:"arg2 (to name if 2 args)" positional:"true"`
 		Verbose boa.Required[bool]   `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 	}
-	return boa.Wrap{
+	return boa.Cmd{
 		Use:    "rename",
 		Short:  "Rename a session",
 		Params: &p,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunFunc: func(cmd *cobra.Command, args []string) {
 			if p.Arg2.HasValue() {
 				session.RenameSession(p.Arg1.Value(), *p.Arg2.Value())
 			} else {
 				session.RenameSession("", p.Arg1.Value())
 			}
 		},
-	}.ToCmd()
+	}.ToCobra()
 }

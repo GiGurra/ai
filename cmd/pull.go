@@ -14,12 +14,12 @@ func Pull() *cobra.Command {
 	var p struct {
 		Verbose boa.Required[bool] `descr:"Verbose output" short:"v" default:"false" name:"verbose"`
 	}
-	return boa.Wrap{
+	return boa.Cmd{
 		Use:    "pull",
 		Short:  "Pull the latest conversation sessions/session updates from git remote",
 		Params: &p,
 		Args:   cobra.MinimumNArgs(0),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunFunc: func(cmd *cobra.Command, args []string) {
 
 			sessionsDir := session.Dir()
 			fmt.Printf("Pulling latest sessions from git remote -> %s\n", sessionsDir)
@@ -38,5 +38,5 @@ func Pull() *cobra.Command {
 
 			fmt.Printf("- %s", res.Combined)
 		},
-	}.ToCmd()
+	}.ToCobra()
 }
