@@ -3,7 +3,7 @@ module github.com/gigurra/ai
 go 1.23.5
 
 require (
-	github.com/GiGurra/boa v0.2.2
+	github.com/GiGurra/boa v0.3.2
 	github.com/GiGurra/cmder v0.0.2
 	github.com/GiGurra/sse-parser v0.0.5
 	github.com/bcicen/jstream v1.0.1

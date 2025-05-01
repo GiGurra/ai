@@ -1,11 +1,7 @@
-github.com/GiGurra/boa v0.1.22 h1:/UBNACb6bMPu8Tmwqrj/EMIs4nLojbTXRoW8sk6+EWE=
-github.com/GiGurra/boa v0.1.22/go.mod h1:2v+A6CEAzQduK4qmkXEU0waRFE19CCFLbVeOJkwPtug=
-github.com/GiGurra/boa v0.2.0 h1:jM7VWMSfdGROCVWX1DmnQUHEm68msH88YFpbEJPDmys=
-github.com/GiGurra/boa v0.2.0/go.mod h1:2v+A6CEAzQduK4qmkXEU0waRFE19CCFLbVeOJkwPtug=
-github.com/GiGurra/boa v0.2.1 h1:XwOAEl/t72/+fLWm9S9cRkui6TwY6omT5CDdQ+wG9tw=
-github.com/GiGurra/boa v0.2.1/go.mod h1:2v+A6CEAzQduK4qmkXEU0waRFE19CCFLbVeOJkwPtug=
-github.com/GiGurra/boa v0.2.2 h1:9N3HMLDAq3g408sUcQoI7PvsTpREn0y5WgQq2BdaD9Y=
-github.com/GiGurra/boa v0.2.2/go.mod h1:2v+A6CEAzQduK4qmkXEU0waRFE19CCFLbVeOJkwPtug=
+github.com/GiGurra/boa v0.3.1 h1:WXQHI0WozTiPr4VAlYKGTIbLck1fXc0yIzVrElpxl48=
+github.com/GiGurra/boa v0.3.1/go.mod h1:2v+A6CEAzQduK4qmkXEU0waRFE19CCFLbVeOJkwPtug=
+github.com/GiGurra/boa v0.3.2 h1:IlOP6K0qsdILzAKPk3ugRNzl1odbFNqvXVmT2L1lHVE=
+github.com/GiGurra/boa v0.3.2/go.mod h1:2v+A6CEAzQduK4qmkXEU0waRFE19CCFLbVeOJkwPtug=
 github.com/GiGurra/cmder v0.0.2 h1:HwxmOXrGsYB+Z7/Msw9uk7gQqjEyIE4tr2qz1KWCYf8=
 github.com/GiGurra/cmder v0.0.2/go.mod h1:rM1UyXHxD7GV1YqWtqISyUBMSLNle49sMUvaUkMyLDI=
 github.com/GiGurra/sse-parser v0.0.5 h1:GkqmrTxjMmYpeAasnOlQuXbpLTEB2Awo85iuoDPLJMM=
