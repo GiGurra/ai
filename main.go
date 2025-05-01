@@ -17,7 +17,7 @@ func main() {
 		ParamEnrich: config.CliParamEnricher,
 		Params:      cliParams,
 		Args:        cobra.MinimumNArgs(0),
-		SubCommands: []*cobra.Command{
+		SubCmds: []*cobra.Command{
 			cmd.Sessions(),
 			cmd.Session(),
 			cmd.Status(),
