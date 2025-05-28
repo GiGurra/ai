@@ -1,5 +1,8 @@
 # `ai` CLI Tool
 
+[![CI Status](https://github.com/GiGurra/boa/actions/workflows/ci.yml/badge.svg)](https://github.com/GiGurra/boa/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/GiGurra/boa)](https://goreportcard.com/report/github.com/GiGurra/boa)
+
 A minimal cli client turning each terminal session into a persistent conversation with an LLM.
 
 Conversation state is mapped to the terminal/shell session, and can be restored/loaded later and renamed to something more useful.
