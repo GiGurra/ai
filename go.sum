@@ -1,5 +1,7 @@
 github.com/GiGurra/boa v0.3.15 h1:JOkd8Op1ctvsvGjPem1ZE8Li2eXJ/Epg/mEiA+lcsDo=
 github.com/GiGurra/boa v0.3.15/go.mod h1:w/K5cXEblqdimBWb4oP2lB1XS8D3L7LYCdUy03EEkmM=
+github.com/GiGurra/boa v0.3.16 h1:JeqvSBTo7aPYy167DRZHKW+vlRqqyUBBzVhdp00UODw=
+github.com/GiGurra/boa v0.3.16/go.mod h1:w/K5cXEblqdimBWb4oP2lB1XS8D3L7LYCdUy03EEkmM=
 github.com/GiGurra/cmder v0.0.2 h1:HwxmOXrGsYB+Z7/Msw9uk7gQqjEyIE4tr2qz1KWCYf8=
 github.com/GiGurra/cmder v0.0.2/go.mod h1:rM1UyXHxD7GV1YqWtqISyUBMSLNle49sMUvaUkMyLDI=
 github.com/GiGurra/sse-parser v0.0.5 h1:GkqmrTxjMmYpeAasnOlQuXbpLTEB2Awo85iuoDPLJMM=
