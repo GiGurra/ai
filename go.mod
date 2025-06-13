@@ -4,7 +4,7 @@ go 1.24.2
 
 require (
 	github.com/GiGurra/boa v0.3.16
-	github.com/GiGurra/cmder v0.0.2
+	github.com/GiGurra/cmder v0.0.3
 	github.com/GiGurra/sse-parser v0.0.5
 	github.com/bcicen/jstream v1.0.1
 	github.com/go-resty/resty/v2 v2.16.5
