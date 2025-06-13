@@ -61,12 +61,25 @@ func (o Provider) BasicAsk(question domain.Question) (domain.Response, error) {
 
 func (o Provider) BasicAskStream(question domain.Question) <-chan domain.RespChunk {
 
-	host := fmt.Sprintf("%s-aiplatform.googleapis.com", o.cfg.LocationID)
+	location := func() string {
+		if o.cfg.LocationID == "" || o.cfg.LocationID == "global" {
+			return "global"
+		} else {
+			return o.cfg.LocationID
+		}
+	}()
+	host := func() string {
+		if location == "global" {
+			return "aiplatform.googleapis.com"
+		} else {
+			return fmt.Sprintf("%s-aiplatform.googleapis.com", o.cfg.LocationID)
+		}
+	}()
 	baseUrl := fmt.Sprintf("https://%s", host)
 	endpointUrl, err := url.Parse(
 		fmt.Sprintf(
 			"%s/v1/projects/%s/locations/%s/publishers/google/models/%s:streamGenerateContent",
-			baseUrl, o.cfg.ProjectID, o.cfg.LocationID, o.cfg.ModelId,
+			baseUrl, o.cfg.ProjectID, location, o.cfg.ModelId,
 		),
 	)
 	if err != nil {
