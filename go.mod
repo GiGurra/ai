@@ -10,7 +10,7 @@ require (
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/google/uuid v1.6.0
 	github.com/samber/lo v1.51.0
-	github.com/sashabaranov/go-openai v1.40.3
+	github.com/sashabaranov/go-openai v1.40.5
 	github.com/spf13/cobra v1.9.1
 	golang.org/x/sys v0.33.0
 	golang.org/x/term v0.32.0
