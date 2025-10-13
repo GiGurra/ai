@@ -2,20 +2,24 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/GiGurra/boa/pkg/boa"
 	"github.com/gigurra/ai/config"
 	"github.com/gigurra/ai/session"
 	"github.com/spf13/cobra"
 )
 
+type SessionsParams struct {
+	config.CliSubcParams
+	Format string `descr:"Output format" name:"format" default:"text" short:"f" alts:"text,table"`
+}
+
 func Sessions() *cobra.Command {
-	p := config.CliSubcParams{}
-	return boa.Cmd{
+	return boa.CmdT[SessionsParams]{
 		Use:         "sessions",
 		Short:       "List all stored sessions",
-		Params:      &p,
 		ParamEnrich: config.CliParamEnricher,
-		RunFunc: func(cmd *cobra.Command, args []string) {
+		RunFunc: func(p *SessionsParams, cmd *cobra.Command, args []string) {
 			sessions := session.ListSessions()
 			currentSession := session.GetSessionID(p.Session.GetOrElse(""))
 			if p.Verbose.Value() {
