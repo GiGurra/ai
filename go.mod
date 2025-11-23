@@ -7,7 +7,7 @@ require (
 	github.com/GiGurra/cmder v0.0.4
 	github.com/GiGurra/sse-parser v0.0.5
 	github.com/bcicen/jstream v1.0.1
-	github.com/go-resty/resty/v2 v2.16.5
+	github.com/go-resty/resty/v2 v2.17.0
 	github.com/google/uuid v1.6.0
 	github.com/samber/lo v1.52.0
 	github.com/sashabaranov/go-openai v1.41.2
