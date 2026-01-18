@@ -1,9 +1,9 @@
 module github.com/gigurra/ai
 
-go 1.24.2
+go 1.25
 
 require (
-	github.com/GiGurra/boa v0.3.32
+	github.com/GiGurra/boa v0.3.73
 	github.com/GiGurra/cmder v0.0.4
 	github.com/GiGurra/sse-parser v0.0.5
 	github.com/bcicen/jstream v1.0.1
@@ -11,7 +11,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/samber/lo v1.52.0
 	github.com/sashabaranov/go-openai v1.41.2
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	golang.org/x/sys v0.38.0
 	golang.org/x/term v0.37.0
 	gopkg.in/yaml.v3 v3.0.1
